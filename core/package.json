@@ -1,0 +1,20 @@
+{
+  "name": "guvna-core",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Guvna core repository",
+  "packageManager": "pnpm@10.13.1",
+  "scripts": {
+    "build": "tsc -p tsconfig.json",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "typecheck": "tsc -p tsconfig.json --noEmit",
+    "lint": "echo 'no lint configured'",
+    "validate:platform": "pnpm typecheck && pnpm test"
+  },
+  "devDependencies": {
+    "@types/node": "^24.3.0",
+    "typescript": "^5.8.3",
+    "vitest": "^2.1.5"
+  }
+}
