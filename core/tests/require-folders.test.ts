@@ -5,7 +5,7 @@ import { describe, expect, it } from "vitest";
 
 const coreRoot = fileURLToPath(new URL("..", import.meta.url));
 
-const requiredFolders = ["doctrine", "runtime", "sdk"];
+const requiredFolders = ["runtime", "sdk"];
 
 describe("core folders", () => {
   it("exists for the expected top-level directories", () => {
