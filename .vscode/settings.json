@@ -1,0 +1,7 @@
+{
+  // Required for the conformance-auditor agent's agent-scoped PreToolUse hook
+  // (.github/agents/conformance-auditor.agent.md) to be enforced. Without this,
+  // the hook frontmatter is inert and the auditor's read-only requirement would
+  // rely on instructions alone.
+  "chat.useCustomAgentHooks": true
+}

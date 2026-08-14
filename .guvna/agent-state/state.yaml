@@ -1,0 +1,17 @@
+# Guvna agent process state.
+# Process state only — not semantic authority. See AGENT-OPERATING-MODEL.md section 18.
+
+plan_version: "0.1.0"
+phase: "pre-implementation"
+gate: "Gate 0"
+status: "not_started"
+
+doctrine_digest: null
+semantic_model_digest: null
+
+candidate_contract: null
+applicable_contract: null
+
+authorized_mutation_scope: []
+
+last_completed_gate: null

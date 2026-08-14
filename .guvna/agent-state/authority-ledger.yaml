@@ -1,0 +1,6 @@
+# Guvna authority ledger.
+# Records actual human approval events only. Existence of a proposal or
+# evidence file does NOT imply approval; only an entry here does.
+# See AGENT-OPERATING-MODEL.md section 17.
+
+approvals: []
