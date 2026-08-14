@@ -20,7 +20,7 @@ Do NOT invent, reinterpret, simplify, weaken, or supersede its authority model.
 
 Do NOT create another normative specification that duplicates the Agent Operating Model.
 
-Do NOT create any new documents under `core/doctrine/` or any of its subdirectories.
+Do NOT create any new documents under `doctrine/core/` or any of its subdirectories.
 
 The Agent Operating Model itself is the source of truth.
 
