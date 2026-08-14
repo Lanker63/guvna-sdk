@@ -1,0 +1,28 @@
+flowchart LR
+  subgraph GDOC["Guvna Doctrine"]
+    direction LR
+    GD["Governing Doctrine"] --> CM["Canonical Models"] --> AD["Architectural Doctrine"] --> SC["Semantic Compilation"] --> CSC["Candidate Semantic Contract"] --> CV["Contract Validation"] --> CR["Contract Ratification"] --> ASC["Applicable Semantic Contract"]
+  end
+
+  subgraph SPECIAL["Applicable Contract Specializations"]
+    direction TB
+    ASC --> RC["Runtime Contract"]
+    ASC --> SDKC["SDK Contract"]
+    ASC --> AC["Adoption Contract"]
+    ASC --> PC["Projection Contract"]
+  end
+
+  subgraph EXEC["Runtime Realization"]
+    direction LR
+    RC --> RT["Runtime"] -->|produces| RD["Runtime Directives"]
+  end
+
+  subgraph REPOB["Repository Projection Boundary"]
+    direction TB
+    PC -->|constrains| GP["Governance Projection (external repository-owned artifact)"]
+  end
+
+  AC --> RAB["Repository Adoption Boundary"]
+
+  SDKC -->|defines| SDK["SDK"]
+  SDK -->|consumed by| HI["Host Implementations"]

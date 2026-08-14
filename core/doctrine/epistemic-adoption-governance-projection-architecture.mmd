@@ -1,0 +1,55 @@
+flowchart LR
+  subgraph REPO["Repository-owned"]
+    direction LR
+    RI["Repository Information"] --> R["Reasoning"]
+    E["Evidence"] --> R
+    R --> INT["Repository Intelligence"]
+    R --> W["Repository Wisdom"]
+    INT --> RA["Repository Authority"]
+    W --> RA
+    RA --> AD["Authority Decision"] --> ACC["Acceptance"] --> TR["Accepted Repository Truth"] --> AK["Accepted Repository Knowledge"] --> U["Repository Understanding"]
+    U --> RG["Repository Governance"] --> RPC["Repository Projection Compilation"] --> GP["Governance Projection"]
+  end
+
+  subgraph ADOPTION["Repository Adoption Boundary"]
+    direction LR
+    ACtx["Authority Context"] --> RAD["Repository Adoption"] --> CS["Candidate Statements"] --> AAD["Adoption Authority Decision"] --> RACC["Repository Acceptance"]
+  end
+
+  subgraph CONTRACTS["Guvna-owned contract boundary"]
+    direction TB
+
+    APPC["Applicable Semantic Contract"]
+    AC["Adoption Contract"]
+    PC["Projection Contract"]
+    ASC["Adopted Semantic Contract"]
+    CSC["Candidate Successor Contract"]
+
+    APPC --> AC
+    APPC --> PC
+
+    CSC -->|assessed against| CC["Compatibility Classification"]
+    ASC -->|assessed against| CC
+
+    subgraph CCAT["Compatibility Classification"]
+      direction TB
+      CC --> C1["Compatible"]
+      CC --> C2["Projection-compatible"]
+      CC --> C3["Adaptable"]
+      CC --> C4["Migration-required"]
+      CC --> C5["Incompatible"]
+      CC --> C6["Indeterminate"]
+    end
+  end
+
+  APPC -->|available for adoption| RAD
+  RAD -->|establishes adoption of| ASC
+
+  RI --> RAD
+
+  RACC --> ACC
+  RACC --> AP["Acceptance Provenance"]
+  RACC --> NRK["Normalized Repository Knowledge"] --> AK
+  RACC --> KP["Knowledge Projection"]
+
+  GP -->|conforms to| PC
