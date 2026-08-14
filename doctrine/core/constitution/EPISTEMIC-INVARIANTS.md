@@ -1432,6 +1432,14 @@ A realization SHALL NOT reinterpret a constitutional invariant merely to simplif
 
 ---
 
+# Invariant 52 — Authority is conferred, scoped, and attributable.
+
+Authority to make a governance decision derives from an explicitly recognized authority relationship and is constrained by the scope, capabilities, and conditions of that delegation. An authority may be human or non-human, including an authorized agent. Agent status alone neither grants nor denies governance authority.
+
+Delegated authority does not inherently transfer authority outside its declared scope. In particular, repository governance authority does not by itself confer authority over Guvna semantic meaning.
+
+---
+
 # Canonical Epistemic Relationship
 
 The canonical relationship is:

@@ -175,7 +175,7 @@ The architecture SHALL preserve the following ownership model:
 | Repository Understanding content | Governed Repository | Knowledge Manifestations |
 | Repository Governance content | Governed Repository | Governance artifacts |
 | Governance Projection | Governed Repository under Guvna contract | Runtime-consumable projection |
-| Repository-specific acceptance | Repository Authority | Authority process |
+Repository-specific acceptance | Repository Authority | Authority process defined by the Repository Authority Model |
 | Execution | Runtime / Host | Execution realization |
 | Execution evidence | Runtime / Host | Evidence artifacts |
 | Guvna semantic history | Guvna | Guvna history |
@@ -185,6 +185,34 @@ The architecture SHALL preserve the following ownership model:
 Ownership means ownership of meaning.
 
 It does not imply ownership of every physical representation.
+
+## Authority Realization
+
+Repository Authority is an authority relationship, not an inherent
+property of an actor type.
+
+A Governed Repository MAY realize Repository Authority through:
+
+- a human authority;
+- an explicitly delegated agent;
+- or another authority subject permitted by the applicable
+  Authority Model.
+
+The realization of Repository Authority SHALL preserve:
+
+- authority identity;
+- delegation provenance where applicable;
+- authority scope;
+- permitted decision capabilities;
+- applicable constraints;
+- and acceptance provenance.
+
+An agent participating in repository governance does not acquire
+Repository Authority merely through participation, execution, or
+model capability.
+
+A delegated agent may exercise Repository Authority only within the
+authority explicitly granted to it.
 
 ---
 

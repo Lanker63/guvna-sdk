@@ -124,6 +124,16 @@ Guvna Core SHALL NOT become Repository Authority.
 
 A model SHALL NOT become Repository Authority.
 
+A Governed Repository MAY explicitly designate an authorized agent as
+Repository Authority through its applicable Authority Model.
+
+An agent designated as Repository Authority may exercise repository-specific
+acceptance only within its declared authority scope, capabilities, and
+conditions.
+
+Agent participation, model capability, Runtime execution, or Host trust
+does not independently establish Repository Authority.
+
 A projection SHALL NOT become Repository Authority.
 
 ---

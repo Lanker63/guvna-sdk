@@ -1067,6 +1067,41 @@ repository-specific meaning.
 
 ---
 
+# Delegated Authority and Host Realization
+
+A Host Implementation SHALL NOT acquire Repository Authority merely by
+hosting, invoking, presenting, or executing an authorized agent.
+
+A Governed Repository MAY designate an agent operating through a Host as
+Repository Authority through its applicable Authority Model.
+
+Where an agent exercises delegated Repository Authority through a Host,
+the Host SHALL preserve:
+
+- the agent's authority identity;
+- the applicable delegation relationship;
+- authority scope;
+- permitted decision capabilities;
+- applicable conditions;
+- and authority provenance.
+
+The Host SHALL realize the agent's authorized authority actions without
+becoming the authority itself.
+
+The distinction SHALL remain:
+
+Host Implementation
+    ≠
+Agent exercising delegated Repository Authority
+
+and:
+
+Agent exercising delegated Repository Authority
+    ≠
+Host-owned Repository Authority
+
+---
+
 # Diagnostics
 
 Host Implementations MAY render diagnostics produced by Core.

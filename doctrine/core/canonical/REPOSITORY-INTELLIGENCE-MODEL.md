@@ -330,20 +330,23 @@ Repository Authority determines whether a recommendation or judgment should beco
 
 # Repository Authority
 
-Repository Authority is the authority mechanism capable of establishing Repository Truth for a Governed Repository.
+Repository Authority is the authority mechanism capable of establishing
+Repository Truth for a Governed Repository within its applicable scope.
 
-Repository Authority exercises judgment over proposed repository meaning.
+Repository Authority MAY be exercised by a human or by an authorized
+non-human authority, including an explicitly delegated agent.
 
-Repository Authority MAY:
+An agent does not become Repository Authority merely because it is:
+- an agent;
+- an AI system;
+- a model;
+- automated;
+- capable of reasoning;
+- capable of execution;
+- or trusted by a Host.
 
-- accept;
-- reject;
-- revise;
-- defer;
-- supersede;
-- or otherwise resolve
-
-proposed Repository Knowledge.
+Authority is established by the applicable authority relationship,
+delegation, scope, capabilities, and conditions.
 
 Repository Authority remains distinct from:
 

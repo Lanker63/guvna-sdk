@@ -87,9 +87,18 @@ useful realizations.
 
 It does not establish Repository Truth.
 
-It does not exercise Repository Authority.
+Artificial intelligence may assist Repository Intelligence and contribute
+useful realizations.
 
-It does not replace Repository Wisdom.
+An AI system does not exercise Repository Authority merely by being an
+AI system, model, automation, or realization.
+
+Where Repository Governance explicitly delegates Repository Authority to an
+authorized agent, an AI-based agent MAY exercise that authority within its
+declared scope and conditions.
+
+AI-generated reasoning remains non-authoritative unless and until the
+applicable authority relationship establishes otherwise.
 
 ## The Future
 

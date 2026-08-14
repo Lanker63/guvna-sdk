@@ -847,12 +847,16 @@ Runtime MAY:
 
 - validate authority state;
 - require authority;
-- enforce acceptance transitions;
-- and reject unauthorized operations.
+- enforce acceptance transitions.
 
-Runtime SHALL NOT become Repository Authority.
+Runtime SHALL NOT become Repository Authority merely by executing,
+enforcing, or validating repository governance.
 
-Repository-specific Acceptance remains attributable to Repository Authority.
+Repository-specific Acceptance remains attributable to the authorized
+Repository Authority exercising authority within its declared scope.
+
+That authority MAY be human or an explicitly authorized non-human authority,
+including a delegated agent.
 
 ---
 
@@ -1049,7 +1053,9 @@ Repository alignment is a separate governed process.
 
 # Invariant 38 — Repository Alignment Requires Repository Authority
 
-Where a semantic evolution requires repository-specific meaning to change:
+Where a semantic evolution requires repository-specific meaning to change,
+the applicable Repository Authority SHALL make or authorize the required
+Authority Decision within its declared scope.
 
 ```text
 Semantic Delta
@@ -1075,6 +1081,18 @@ Updated Repository Knowledge
        ▼
 Updated Repository Understanding
 ```
+
+Repository Authority MAY be exercised by a human or by an explicitly
+authorized non-human authority, including a delegated agent.
+
+Where Repository Authority is delegated to an agent, the authority
+relationship SHALL preserve the delegating authority, delegated scope,
+permitted decision capabilities, applicable conditions, and sufficient
+provenance to establish the authority under which the decision was made.
+
+An agent SHALL NOT acquire broader Repository Authority merely through
+execution capability, Runtime access, Host integration, model capability,
+or participation in repository governance.
 
 Guvna may generate alignment candidates.
 
