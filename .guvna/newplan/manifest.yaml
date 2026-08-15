@@ -35,7 +35,7 @@ artifacts:
     sha256: 88868cf995c0dff8d3783838cafc2071560586018e448a939852463fae72849e
   - path: realization-plan.md
     kind: bounded-engineering-plan
-    sha256: 5a61eb8f29f37da79eb3afebadd38c4646f0b2cf8cad44292f652098488a7fd5
+    sha256: 95c911a432c850bf77a402cff5af1b2b3979ea29306c4ca63fef2d1b1c452129
 exclusions:
   - Contract payloads or reconstructed Contract content
   - Candidate or Applicable Contract artifacts
