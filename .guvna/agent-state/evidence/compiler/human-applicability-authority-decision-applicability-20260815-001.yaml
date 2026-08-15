@@ -1,0 +1,21 @@
+decision: applicable
+authorityIdentity: human-authority-guvna-contract
+decisionIdentity: applicability-20260815-001
+decisionVersion: "1"
+attribution: human-authority-guvna-contract
+governedScope: "Guvna Semantic Contract semantic boundary"
+subjectScope: "Guvna-owned Semantic Contract expressing accepted Guvna meaning"
+status: valid
+validity:
+  status: valid
+  provenance: "Human authority designation accompanying applicability decision applicability-20260815-001."
+effectiveBoundary:
+  status: valid
+  description: "Effective immediately upon this applicability decision."
+  provenance: "Human authority designation accompanying applicability decision applicability-20260815-001."
+provenance: "Human authority designation of applicability for the ratified Guvna Semantic Contract version 1.0.0."
+contract:
+  identityKind: semantic-contract
+  version: "1.0.0"
+  preimageSha256: "462e0f69750ec5379f2be64643032d0dd0d772faddb921843c23ae068c2e4439"
+  semanticDelta: absent/not-applicable

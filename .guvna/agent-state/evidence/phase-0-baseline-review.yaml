@@ -1,0 +1,51 @@
+phase: 0
+authority_gate: Gate 0 - Baseline Authority Gate
+status: APPROVED
+inputs:
+  - docs/mark1/GUVNA-DOCTRINE-TO-RUNTIME-SDK-AI-AGENT-PLAN.md
+  - doctrine/core/
+  - core/
+  - .guvna/agent-state/
+process_inputs:
+  - doctrine/agentic/
+outputs:
+  - .guvna/agent-state/evidence/phase-0-baseline-review.md
+  - .guvna/agent-state/evidence/phase-0-baseline-review.yaml
+proposed_mutations: []
+completed_mutations:
+  - .guvna/agent-state/evidence/phase-0-baseline-review.md
+  - .guvna/agent-state/evidence/phase-0-baseline-review.yaml
+semantic_decisions: []
+authority_decisions:
+  - gate: "Gate 0 - Baseline Authority Gate"
+    decision: "APPROVED"
+    scope:
+      - "Phase 0 baseline review"
+      - "doctrine/core/** is the core realization source boundary"
+      - "doctrine/agentic/** is excluded from core semantic realization inputs"
+semantic_gaps:
+  - generic Semantic Model and Semantic IR schema are not accepted
+  - compiler normalization, ordering, serialization, and identity rules are unspecified
+  - generic cross-domain compiler vocabulary is incomplete
+  - authoritative doctrine-set inclusion/version/digest/applicability rule is unspecified
+  - doctrine conflict precedence is unspecified
+  - no ratified Runtime or SDK contract exists
+compatibility: not_assessed
+provenance:
+  sources:
+    - docs/mark1/GUVNA-DOCTRINE-TO-RUNTIME-SDK-AI-AGENT-PLAN.md
+    - doctrine/core/
+  exclusions:
+    - doctrine/agentic/
+  exclusion_reason: "Operational process guidance only; not part of core doctrine or core semantic realization input."
+  reviewers:
+    - doctrine-guardian
+    - architecture-guardian
+validation:
+  result: baseline_review_complete
+  direct_conflict_found: false
+tests:
+  executed: false
+  reason: baseline phase is inspection-only
+next_phase: Gate 1 - Semantic Model Authority Gate
+requires_approval: false

@@ -3,5 +3,5 @@
   "compilerOptions": {
     "rootDir": "."
   },
-  "include": ["vitest.config.mts"]
+  "include": ["src/**/*.ts", "vitest.config.mts"]
 }

@@ -1,0 +1,38 @@
+phase: 2
+authority_gate: Gate 2 - Semantic IR Authority Gate
+gap: 9
+status: SEMANTICALLY_RESOLVED
+authority:
+  semantic_basis: accepted Repository Knowledge
+  governance_projection: derived repository-owned manifestation
+  persistence_generation_availability_recency_or_consumption_establishes_authority: false
+projection_input:
+  when_required: applicable Guvna contract requires a Governance Projection
+  required_properties:
+    - applicable
+    - conformant
+    - compatible
+    - traceable to accepted repository semantics
+runtime_boundaries:
+  selects_authoritative_meaning_among_conflicting_artifacts: false
+  silently_promotes_operational_or_diagnostic_information: false
+  repairs_revises_or_replaces_accepted_repository_semantics: false
+  establishes_revises_or_supersedes_repository_truth: false
+conflict_behavior: applicable contract-defined validation, compatibility, ambiguity, or failure behavior
+invalid_input_behavior:
+  invalid_incompatible_stale_beyond_tolerance_or_non_conformant: fail closed or contract-defined indeterminate/incompatibility/failure outcome
+allowed_non_authoritative_inputs:
+  - operational information
+  - diagnostic information
+  - provenance information
+  - contextual information
+unresolved:
+  - concrete Runtime input schema
+  - source-selection algorithm
+  - projection loading mechanism
+  - caching behavior
+  - TypeScript implementation
+provenance:
+  source: human decision in conversation
+  related_evidence: .guvna/agent-state/evidence/gate-2-blocked-report.md
+requires_approval: false

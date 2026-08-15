@@ -1,0 +1,23 @@
+execution: "Approved Applicability Determination scope-equality remediation"
+recorded_at: "2026-08-15"
+status: IMPLEMENTED
+proposal: .guvna/agent-state/proposals/applicability-determination-scope-equality-remediation-proposal.md
+handoff: .guvna/agent-state/proposals/semantic-compiler-applicability-remediation-handoff-proposal.md
+changed_paths:
+  - core/src/compiler/applicability-determination.ts
+  - core/tests/compiler/applicability-determination.test.ts
+implementation:
+  removed_predicate: "governedScope === subjectScope"
+  governed_scope_check: "exact supplied governedScope equals Guvna Semantic Contract semantic boundary"
+  subject_scope_check: "required independent non-empty string authoritative input"
+  preserved:
+    - authority validation
+    - validity and effective-boundary checks
+    - provenance
+    - fail-closed behavior
+    - result vocabulary: applicable, not-applicable, indeterminate
+  candidate_contract_modified: false
+  ratified_contract_modified: false
+  authority_decision_modified: false
+  applicable_contract_created: false
+  downstream_surfaces_modified: false

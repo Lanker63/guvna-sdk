@@ -1,0 +1,56 @@
+execution: "Applicability Determination against ratified Guvna Semantic Contract"
+recorded_at: "2026-08-15"
+result: indeterminate
+authority_boundary: "approved Applicability Determination only"
+
+subject:
+  lifecycle: ratified
+  semantic_version: "1.0.0"
+  identity_kind: semantic-contract
+  preimage_sha256: "462e0f69750ec5379f2be64643032d0dd0d772faddb921843c23ae068c2e4439"
+  semantic_delta: absent/not-applicable
+
+required_authoritative_inputs:
+  authority_decision:
+    supplied: false
+    required: true
+    accepted_values:
+      - applicable
+      - not-applicable
+  governed_scope:
+    supplied: false
+    required: true
+  subject_scope:
+    supplied: false
+    required: true
+  validated:
+    supplied: false
+    required: true
+  validity_evidence:
+    supplied: false
+    required: true
+  effective_boundary_evidence:
+    supplied: false
+    required: true
+
+determination:
+  result: indeterminate
+  reason: "Required authoritative applicability inputs are missing; fail closed."
+  provenance: null
+  provenance_runtime_shape: "undefined"
+
+preserved_boundaries:
+  - "No authority decision was created or altered."
+  - "The ratified Contract was not modified."
+  - "No applicability was established."
+  - "No Contract artifact or workspace path was created or designated."
+  - "No Runtime, SDK, Projection, Host, or downstream realization was performed."
+
+next_decision:
+  required: true
+  action: "Provide authoritative applicability decision, exact governed/subject scope, validity evidence, effective-boundary evidence, and provenance, then rerun the approved evaluator."
+  prohibition: "Do not infer or synthesize any missing input from ratification, version, identity, process state, filesystem state, or implementation state."
+
+verification:
+  evaluator: "determineApplicability"
+  expected_fail_closed_outcome: indeterminate

@@ -1,0 +1,49 @@
+phase: 2
+authority_gate: Gate 2 - Semantic IR Authority Gate
+gap: 7
+status: SEMANTICALLY_RESOLVED
+ownership:
+  semantic_owner: Guvna
+  identity_independent_of:
+    - Runtime implementation identity
+    - SDK implementation identity
+    - filesystem location
+    - package identity
+    - generation event
+    - realization artifact
+lifecycle:
+  initial_state: Candidate
+  distinct_states:
+    - Candidate
+    - validation
+    - Ratified
+    - Applicable
+    - supersession
+    - rejection
+    - retirement
+  applicability_is_lifecycle_state: false
+authority:
+  ratification_required: true
+  Guvna_Core_ratification_authority: human
+  existence_validation_generation_persistence_or_consumption_establishes_authority: false
+applicability:
+  requires_defined_conditions: true
+  establishes_semantic_authority: false
+realizations:
+  Runtime_consumes_or_conforms: Applicable Runtime Contract
+  SDK_consumes_or_conforms: Applicable Runtime Contract
+  realizations_establish_authority_or_applicability: false
+versioning:
+  version_change_establishes_supersession: false
+  version_change_establishes_applicability: false
+  version_change_establishes_ratification: false
+unresolved:
+  - concrete Runtime Contract schema
+  - lifecycle enumeration
+  - applicability algorithm
+  - ratification record structure
+  - TypeScript implementation
+provenance:
+  source: human decision in conversation
+  related_evidence: .guvna/agent-state/evidence/gate-2-blocked-report.md
+requires_approval: false

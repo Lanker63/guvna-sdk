@@ -1,0 +1,78 @@
+phase: 3
+capability: applicability-determination
+review: post-conformance-remediation
+status: INDETERMINATE_FOR_CONTRACT_DEPENDENT_CLAIMS
+implementation_conformance: REMEDIATED
+source_proposal: .guvna/agent-state/proposals/applicability-determination-post-conformance-remediation-proposal.md
+
+findings_addressed:
+  provenance:
+    status: addressed
+    fail_closed_result_shape: addressed
+    preserved_components:
+      - authority
+      - validity
+      - effective_boundary
+  adversarial_test_coverage:
+    status: addressed
+    focused_test_count: 16
+    cases:
+      - invalid_authority_decision
+      - absent_or_malformed_decision_identity
+      - absent_decision_version
+      - absent_attribution
+      - absent_authority_provenance
+      - invalid_or_missing_validity_evidence
+      - invalid_or_missing_effective_boundary_evidence
+      - ratification_prohibition
+      - authority_decision_mutation_prohibition
+      - mutation_boundary_non_mutation
+  evidence:
+    status: addressed
+    validation_counts_refreshed: true
+    stale_claims_removed: true
+
+validation:
+  focused_tests: passed
+  focused_test_count: 16
+  core_validate_platform: passed
+  core_test_count: 17
+  typecheck: passed
+  auditor_command_execution: unavailable
+  auditor_command_execution_reason: "The conformance-auditor read-only hook allowlist remains unchanged and denied the verification command in the prior audit."
+  latest_narrow_remediation_tests: passed
+  latest_narrow_remediation_test_count: 16
+  latest_narrow_remediation_typecheck: passed
+
+authority_boundary:
+  candidate_contract_ratification: false
+  authority_decision_creation_or_alteration: false
+  applicable_contract_artifact_created: false
+  applicable_contract_artifact_relocated: false
+  applicable_contract_artifact_mutated: false
+  conformance_auditor_hook_modified: false
+
+contract_reference:
+  status: BLOCKED/UNRESOLVED
+  applicable_contract_reference: null
+  version: null
+  workspace_path: null
+  authority_decision_required: true
+  contract_dependent_claims: indeterminate
+
+changed_path_manifest:
+  authorized_paths:
+    - core/src/compiler/applicability-determination.ts
+    - core/tests/compiler/applicability-determination.test.ts
+    - .guvna/agent-state/evidence/compiler/applicability-determination-implementation.yaml
+    - .guvna/agent-state/evidence/compiler/applicability-determination-conformance.yaml
+    - .guvna/agent-state/state.yaml
+  excluded_and_untouched:
+    - .github/hooks/scripts/conformance-auditor-guard.py
+    - doctrine/**
+    - core/runtime/**
+    - core/sdk/**
+    - Applicable Contract artifact
+  within_authorized_scope: true
+  git_status_independently_verified: false
+  git_status_verification_note: "No Git-status execution result was available from the read-only review context; no clean-status claim is made here."

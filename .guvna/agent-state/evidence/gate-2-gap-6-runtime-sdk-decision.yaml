@@ -1,0 +1,36 @@
+phase: 2
+authority_gate: Gate 2 - Semantic IR Authority Gate
+gap: 6
+status: SEMANTICALLY_RESOLVED
+semantic_dependency: "Applicable Semantic Contract"
+realizations:
+  - Runtime
+  - SDK
+independence:
+  runtime_is_sdk_semantic_source: false
+  sdk_is_runtime_semantic_source: false
+  implementation_dependency_establishes_semantic_authority: false
+versioning:
+  independently_versioned: true
+  runtime_change_requires_sdk_semantic_or_version_change: false
+  sdk_change_requires_runtime_semantic_or_version_change: false
+contract_impact:
+  may_affect:
+    - Runtime
+    - SDK
+    - both
+    - neither
+  evaluated_independently: true
+compatibility:
+  runtime_and_sdk_relationships_distinct: true
+  inferred_from_other_implementation_version: false
+identification: "Each realization is identifiable relative to the applicable Semantic Contract it realizes or conforms to."
+unresolved:
+  - Runtime/SDK API dependency structure
+  - package dependency graph
+  - versioning mechanics
+  - TypeScript implementation
+provenance:
+  source: human decision in conversation
+  related_evidence: .guvna/agent-state/evidence/gate-2-blocked-report.md
+requires_approval: false

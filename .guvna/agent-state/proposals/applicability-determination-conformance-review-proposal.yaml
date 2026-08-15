@@ -1,0 +1,52 @@
+phase: 3
+authority_gate: Post-implementation conformance review
+status: APPROVED
+governing_scope: Approved Applicability Determination implementation handoff
+
+review_scope:
+  capability: applicability-determination
+  authoritative_inputs_only: true
+  evaluate_established_governed_scope: true
+  evaluate_validity_conditions: true
+  evaluate_effective_boundary_conditions: true
+  results:
+    - applicable
+    - not-applicable
+    - indeterminate
+  provenance_preserving: true
+  fail_closed: true
+
+required_evidence:
+  - each approved applicability outcome
+  - invalid or unavailable authoritative-input behavior
+  - authoritative-input enforcement
+  - exact governed-scope evaluation
+  - validity/effective-boundary evaluation
+  - provenance preservation
+  - ratification prohibition
+  - authority-decision mutation prohibition
+  - mutation-boundary compliance
+  - absence of unrelated compiler-stage implementation
+  - absence of unresolved Gate 2 capability implementation
+
+finding_classes:
+  - conformant
+  - non-conformant
+  - indeterminate
+
+failure_conditions:
+  - missing required evidence
+  - ambiguous or contradictory provenance
+  - unresolved scope evaluation
+  - authority-boundary violation
+
+exclusions:
+  candidate_contract_ratification: true
+  authority_decision_creation_or_alteration: true
+  delegation_or_revocation: true
+  repository_applicability: true
+  compatibility_or_other_unresolved_gate_2_capabilities: true
+  general_compiler_stage_implementation: true
+  downstream_artifact_changes: true
+
+implementation_performed: false

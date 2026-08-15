@@ -1,0 +1,90 @@
+phase: 1
+authority_gate: Gate 1 - Semantic Model Authority Gate
+status: REVIEW
+semantic_source: doctrine/core/**
+excluded_semantic_sources:
+  - doctrine/agentic/**
+proposal: .guvna/agent-state/proposals/gate-1-doctrine-semantic-model.md
+proposed_mutations:
+  - .guvna/agent-state/proposals/gate-1-doctrine-semantic-model.md
+  - .guvna/agent-state/proposals/gate-1-doctrine-semantic-model.yaml
+completed_mutations:
+  - .guvna/agent-state/proposals/gate-1-doctrine-semantic-model.md
+  - .guvna/agent-state/proposals/gate-1-doctrine-semantic-model.yaml
+semantic_decisions: []
+semantic_gaps:
+  - generic Semantic IR schema mechanics; semantically resolved, but exact TypeScript structure, field cardinality, serialization, normalization, ordering, and deterministic identity remain unspecified
+  - canonicalization implementation mechanics; semantics resolved, but concrete serialization format, normalization algorithms, ordering algorithms, and identity/hash mechanism remain unspecified
+  - authority, acceptance, provenance, uncertainty, and contradiction implementation schemas; semantic distinctions are resolved, but exact structure and cardinality remain unspecified
+  - lifecycle and acceptance implementation matrices; semantic distinctions and transition constraints are resolved, but exact enumerations and artifact-specific matrices remain unspecified
+  - Semantic Version and compatibility implementation algorithms; semantic basis and contextual nature are resolved, but concrete algorithms and representation remain unspecified
+  - Runtime/SDK implementation dependency mechanics; semantic independence and shared applicable-contract authority are resolved, but API/package graph and versioning mechanics remain unspecified
+  - Runtime Contract implementation schema and algorithms; semantic ownership, lifecycle distinctions, ratification, and applicability separation are resolved, but concrete details remain unspecified
+  - Projection implementation schemas and algorithms; projection authority, conformance, applicability, provenance, identity, staleness, and incompatibility semantics are resolved, but concrete details remain unspecified
+  - Runtime input implementation mechanics; authoritative Repository Knowledge, derived projection constraints, conflict handling, and fail-closed semantics are resolved, but input schema, source selection, loading, and caching remain unspecified
+  - conflict precedence implementation mechanics; semantic authority ordering, equal-authority blocking, equivalence handling, and provenance preservation are resolved, but concrete structures and algorithms remain unspecified
+  - authority and delegation implementation mechanics; authority identity, delegation containment, capability separation, provenance, ratification limits, ownership boundaries, and further-delegation semantics are resolved, but concrete schemas and mechanics remain unspecified
+architecture_review:
+  doctrine_guardian: "candidate inventory supported; gaps block further compilation"
+  architecture_guardian: "conditionally preserves architecture; four authority questions unresolved"
+  semantic_compiler: "candidate inventory supported; no IR or contract produced"
+provenance:
+  reviewers:
+    - doctrine-guardian
+    - architecture-guardian
+    - semantic-compiler
+  source_boundary: doctrine/core/**
+validation:
+  result: candidate_model_proposal_complete
+  deterministic_compilation_ready: false
+  reason: unresolved semantic and authority gaps
+authority_decision:
+  gate: "Gate 1 - Semantic Model Authority Gate"
+  decision: "APPROVED"
+  scope:
+    - "Candidate Doctrine Semantic Model proposal"
+    - "authorityReference provisional transition reference field"
+  unresolved_gaps_remain: true
+next_action: Resolve semantic gaps before Semantic IR proposal
+requires_approval: false
+resolved_gap_decisions:
+  - gap: 1
+    decision: "APPROVED"
+    definition: "The Semantic IR is a normalized, provenance-preserving intermediate representation of Guvna semantic meaning derived from the approved Doctrine Semantic Model. It represents semantic concepts, relationships, scope, constraints, identity, lifecycle, authority/acceptance context, and derivation necessary for deterministic validation and compilation into candidate semantic contracts. It is a derived representation, not a source of semantic authority, not a ratification mechanism, and not an implementation model."
+  - gap: 1
+    part: 2
+    decision: "APPROVED"
+    definition: "The Semantic IR SHALL use a generic semantic kernel capable of representing semantic concepts, relationships, invariants/constraints, lifecycle transitions, derivations, provenance, identity, version, scope, meaning, and applicable authority/acceptance context. Domain concepts such as Repository, Runtime, SDK, Host, Contract, Projection, and Agent SHALL be represented through this generic semantic kernel rather than requiring domain-specific IR types. Exact TypeScript structure, field cardinality, serialization, normalization, ordering, and deterministic identity remain unresolved and shall be addressed separately."
+  - gap: 1
+    decision: "SEMANTICALLY RESOLVED"
+    definition: "The Semantic IR's semantic role and generic-kernel boundary have been established by human authority. Exact TypeScript structure, field cardinality, serialization, normalization, ordering, and deterministic identity remain unresolved and are not implied by this decision."
+  - gap: 2
+    decision: "SEMANTICALLY RESOLVED"
+    definition: "The Semantic IR SHALL have a canonical semantic representation. Equivalence, ordering, normalization, serialization, and deterministic identity SHALL be governed by canonical semantic content and semantic rules, independent of incidental realization details. Unresolved semantic ambiguity SHALL remain explicit and block deterministic canonicalization. Concrete formats, algorithms, and hash mechanisms remain implementation decisions."
+  - gap: 3
+    decision: "SEMANTICALLY RESOLVED"
+    definition: "Authority Decision, Acceptance, Provenance, Uncertainty, and Contradiction remain distinct semantic concepts. Each has the approved authority, lineage, uncertainty, or incompatibility meaning and none establishes, determines, or collapses the others. Conflict precedence and resolution are deferred to Gap 10. Exact representation details remain unresolved."
+  - gap: 4
+    decision: "SEMANTICALLY RESOLVED"
+    definition: "Lifecycle and acceptance remain distinct semantic dimensions. Lifecycle, acceptance, ratification, applicability, supersession, rejection, and retirement are explicit, attributable, scoped, and provenance-preserving concepts and transitions; acceptance requires an applicable authority decision and is not inferred from implementation or artifact state. Exact enumerations and artifact-specific transition matrices remain unresolved."
+  - gap: 5
+    decision: "SEMANTICALLY RESOLVED"
+    definition: "Semantic Version identifies evolution of semantic meaning relative to Semantic Identity and Scope. Compatibility is evaluated from semantic meaning and applicable requirements relative to the consumer, contract, dependency relationship, and scope; it is not inferred from version numbers and is not inherently symmetric or global. Version changes do not establish authority, acceptance, applicability, or supersession. Concrete versioning, comparison, representation, classification, and TypeScript algorithms remain unresolved."
+  - gap: 6
+    decision: "SEMANTICALLY RESOLVED"
+    definition: "Runtime and SDK are independent realizations of the applicable Semantic Contract, which is their shared semantic authority. Neither is the semantic source of the other. They remain independently versioned and identifiable relative to the applicable contract, and Runtime/SDK compatibility remain distinct. Concrete API/package dependency structure, versioning mechanics, and TypeScript implementation remain unresolved."
+  - gap: 7
+    decision: "SEMANTICALLY RESOLVED"
+    definition: "A Runtime Contract is a Guvna-owned semantic contract artifact with realization-independent identity. It begins as a Candidate Contract; human Contract Ratification establishes approved authority; applicability is a distinct conditional determination. Runtime and SDK consume or conform to Applicable Runtime Contracts and cannot establish authority or applicability. Runtime Contract lifecycle participates in Gap 4, and version changes do not by themselves establish supersession, applicability, or ratification. Concrete schema and algorithms remain unresolved."
+  - gap: 8
+    decision: "SEMANTICALLY RESOLVED"
+    definition: "Repository Projection Compilation operates under an applicable Guvna-owned Projection Contract and remains subordinate to Repository Authority for repository-specific meaning. Projection conformance is not implied by compilation; applicability is independent; staleness is distinct from invalidity and incompatibility; non-conformant or incompatible projections cannot be consumed as conformant. Compilation establishes neither Repository Truth, Repository Authority, nor new Guvna semantics. Concrete schemas and algorithms remain unresolved."
+  - gap: 9
+    decision: "SEMANTICALLY RESOLVED"
+    definition: "Runtime treats accepted Repository Knowledge as the authoritative semantic basis for repository-specific meaning. Required Governance Projections must be applicable, conformant, compatible, and traceable to accepted semantics. Runtime cannot determine authority among conflicting artifacts, silently promote operational information, or repair repository semantics; invalid, incompatible, stale beyond tolerance, or non-conformant authoritative inputs produce contract-defined failure or indeterminate outcomes. Runtime evaluates but does not establish, revise, or supersede Repository Truth. Concrete input mechanics remain unresolved."
+  - gap: 10
+    decision: "SEMANTICALLY RESOLVED"
+    definition: "Conflict precedence follows established semantic authority: Constitutional Doctrine governs Canonical Models, Canonical Models govern Architectural Doctrine, and Architectural Doctrine governs downstream realization. Semantic Contracts realize established meaning and do not override higher-order meaning. Version, time, filesystem, generation, discovery, persistence, size, convenience, or model recommendation do not establish precedence absent an explicit semantic rule. Equal-authority conflicts without established precedence remain explicit and block deterministic compilation; apparent conflict is not automatically contradiction; provenance and attributable resolution decisions are preserved. Concrete structures and algorithms remain unresolved."
+  - gap: 11
+    decision: "SEMANTICALLY RESOLVED"
+    definition: "Authority is attributable to an Authority Identity. Delegation explicitly identifies delegator, delegate, delegated authority identity, scope, capabilities, conditions, governing authority, and provenance. Delegation cannot exceed or weaken the delegator's authority, scope, capabilities, or constraints; scope and capabilities remain distinct; authority capabilities remain distinct; delegation does not imply Contract Ratification authority; repository delegation cannot establish authority over Guvna meaning; further delegation requires explicit authority and preserves the originating chain. Concrete schemas and mechanics remain unresolved."

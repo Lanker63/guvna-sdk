@@ -1,0 +1,39 @@
+phase: 2
+authority_gate: Gate 2 - Semantic IR Authority Gate
+gap: 1
+decision_part: 2
+status: APPROVED
+decision: "Semantic IR uses a generic semantic kernel."
+semantic_resolution: "The Semantic IR's semantic role and generic-kernel boundary have been established by human authority."
+kernel_obligations:
+  - concepts
+  - relationships
+  - invariants/constraints
+  - lifecycle transitions
+  - derivations
+  - provenance
+  - identity
+  - version
+  - scope
+  - meaning
+  - applicable authority/acceptance context
+domain_representation:
+  mode: generic_kernel
+  domain_specific_ir_types_required: false
+  examples:
+    - Repository
+    - Runtime
+    - SDK
+    - Host
+    - Contract
+    - Projection
+    - Agent
+unresolved:
+  - serialization
+  - normalization
+  - ordering
+  - deterministic identity
+provenance:
+  source: human decision in conversation
+  related_evidence: .guvna/agent-state/evidence/gate-2-blocked-report.md
+requires_approval: false

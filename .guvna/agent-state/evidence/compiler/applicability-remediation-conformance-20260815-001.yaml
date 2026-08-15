@@ -1,0 +1,18 @@
+execution: "Applicability remediation conformance verification"
+recorded_at: "2026-08-15"
+status: PASSED
+focused_test_command: "pnpm -C core test -- applicability-determination.test.ts"
+focused_tests: passed
+focused_test_count: 21
+typecheck_command: "pnpm -C core typecheck"
+typecheck: passed
+core_test_command: "pnpm -C core test"
+core_tests: passed
+core_test_count: 21
+coverage:
+  - distinct valid subjectScope accepted
+  - incorrect governedScope indeterminate
+  - missing or malformed subjectScope indeterminate
+  - applicable and not-applicable preserved
+  - provenance preserved
+  - fail-closed authority and evidence validation preserved

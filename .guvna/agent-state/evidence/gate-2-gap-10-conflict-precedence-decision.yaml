@@ -1,0 +1,39 @@
+phase: 2
+authority_gate: Gate 2 - Semantic IR Authority Gate
+gap: 10
+status: SEMANTICALLY_RESOLVED
+precedence:
+  ordering:
+    - Constitutional Doctrine
+    - Canonical Models
+    - Architectural Doctrine
+    - downstream semantic realization
+  higher_authority_governs: true
+  semantic_contracts_override_higher_order_meaning: false
+invalid_precedence_bases:
+  - version number
+  - timestamp
+  - filesystem location
+  - generation order
+  - discovery order
+  - persistence order
+  - document size
+  - implementation convenience
+  - model recommendation
+equal_authority:
+  no_established_precedence: conflict remains explicit and blocks deterministic compilation
+equivalence:
+  apparent_conflict_is_contradiction_automatically: false
+  established_only_by_governing_semantic_rules: true
+provenance:
+  preserve_all_materially_conflicting_sources: true
+  resolution_is_attributable_authority_decision: true
+  resolution_inferred_by_compilation_runtime_sdk_projection_or_implementation: false
+unresolved:
+  - concrete precedence data structure
+  - conflict-detection algorithm
+  - TypeScript implementation
+provenance_record:
+  source: human decision in conversation
+  related_evidence: .guvna/agent-state/evidence/gate-2-blocked-report.md
+requires_approval: false

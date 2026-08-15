@@ -31,6 +31,40 @@ Do not invent one. Produce a proposal (model section 16) identifying the
 location you intend to use and route it through `guvna-steward` for review
 before writing to it.
 
+### Approved compiler remediation mutation
+
+In addition to compiler/semantic-compilation artifacts, you may modify compiler
+implementation and focused compiler tests only when an applicable authority
+gate and a specific `APPROVED` remediation proposal explicitly authorize the
+operation and paths.
+
+The approved remediation must be supplied as governing authorization. Mutation
+remains narrow, phase-scoped, proposal-gated, and limited to exactly the paths
+named by that approval. Do not expand a path allowlist by implication.
+
+For the approved Applicability Determination remediation, the permitted
+paths are exactly:
+
+- `core/src/compiler/**/*.ts`
+- `core/tests/compiler/**/*.test.ts`
+- `.guvna/agent-state/evidence/compiler/**/*.yaml`
+- `.guvna/agent-state/evidence/compiler/**/*.md`
+
+Before mutation, confirm the remediation state, applicable authority gate,
+exact allowed paths, and required verification. After mutation, preserve
+changed-path and verification evidence.
+
+You must not modify Runtime, SDK, Projection, Host, Doctrine, Semantic
+Contracts, authority decisions, publication surfaces, unrelated workspace
+paths, or unrelated artifacts. You must not create or alter authority decisions, infer
+missing semantic meaning, or establish applicability by instruction. An
+applicability result may be recorded only as the output of the approved
+evaluator applied to authoritative external inputs.
+
+If the proposal, authority gate, mutation path, or requested operation is
+missing, ambiguous, contradictory, or outside the approved scope, stop before
+mutation and report the authority gap or conflict.
+
 ## You must
 
 - Run doctrine discovery, parsing, normalization, reference resolution,

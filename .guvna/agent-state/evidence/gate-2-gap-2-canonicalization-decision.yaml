@@ -1,0 +1,18 @@
+phase: 2
+authority_gate: Gate 2 - Semantic IR Authority Gate
+gap: 2
+status: APPROVED
+decision: "Canonicalization and deterministic identity are governed by canonical semantic content and semantic equivalence rules."
+requirements:
+  - semantically equivalent IR states produce equivalent canonical representations
+  - independence from filesystem, insertion, discovery, generation, execution, language, and incidental serialization order
+  - semantically unordered collections use deterministic ordering based on semantic identity
+  - normalization removes representational variance without inferring or altering meaning
+  - serialization encodes canonical representation and does not establish identity
+  - deterministic identity derives from canonical semantic content
+  - unresolved ambiguity remains explicit and blocks deterministic canonicalization
+implementation_decisions_remaining:
+provenance:
+  source: human decision in conversation
+  related_evidence: .guvna/agent-state/evidence/gate-2-blocked-report.md
+requires_approval: false

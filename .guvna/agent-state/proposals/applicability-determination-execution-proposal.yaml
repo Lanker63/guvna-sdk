@@ -1,0 +1,64 @@
+phase: 3
+authority_gate: Post-Gate 3 implementation scope review
+status: APPROVED
+governing_approval: Approved Gate 3 applicability-only implementation scope
+source_proposal: .guvna/agent-state/proposals/compiler-implementation-proposal.yaml
+
+capability: applicability-determination
+scope:
+  authoritative_inputs_only: true
+  evaluate_established_governed_scope: true
+  evaluate_validity_conditions: true
+  evaluate_effective_boundary_conditions: true
+  results:
+    - applicable
+    - not-applicable
+    - indeterminate
+  provenance_preserving: true
+  fail_closed: true
+
+supporting_stage_code:
+  allowed_only_when_strictly_necessary: true
+  stages:
+    - Discover
+    - Parse
+    - Normalize
+    - Resolve
+    - Compile
+    - Validate
+  general_stage_implementation: false
+
+prohibited:
+  candidate_contract_ratification: true
+  authority_decision_creation_or_alteration: true
+  delegation_or_revocation: true
+  repository_applicability: true
+  unresolved_gate_2_capabilities: true
+  doctrine_mutation: true
+  semantic_ir_mutation: true
+  runtime_sdk_projection_contract_mutation: true
+  publication_or_generated_artifact_mutation: true
+
+required_tests:
+  - applicable
+  - not-applicable
+  - indeterminate
+  - fail-closed behavior
+  - authoritative-input enforcement
+  - exact governed-scope evaluation
+  - validity/effective-boundary evaluation
+  - provenance preservation
+  - ratification and authority-decision mutation prohibition
+  - mutation-boundary enforcement
+
+mutation_scope:
+  exact_paths:
+    - core/src/compiler/**/*.ts
+    - core/tests/compiler/**/*.test.ts
+    - core/tsconfig.json
+    - core/vitest.config.mts
+    - .guvna/agent-state/evidence/compiler/**/*.yaml
+    - .guvna/agent-state/evidence/compiler/**/*.md
+  changed_path_manifest_required: true
+
+implementation_performed: true
