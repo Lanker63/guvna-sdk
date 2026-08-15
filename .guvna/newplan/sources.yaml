@@ -46,7 +46,15 @@ sources:
   - path: core/tests/compiler/applicability-determination.test.ts
     kind: executable-test
     role: applicability-evaluator-behavior
-    sha256: 18747af596c1f5a01f0aac4b5ab220855f0750094df23b969d71837ea299e789
+    sha256: 0cb1331b12df169b37f7eaf70822bbe149825443ac987a053aae6cb166befebb
+  - path: core/src/compiler/contract-applicability.ts
+    kind: executable-production-source
+    role: supplied-input-applicability-integration
+    sha256: 2807f48cbcb22d91fc764e5a79980ab81b50d03f9421c074b3fb64d9e6ee3fae
+  - path: core/tests/compiler/contract-applicability.test.ts
+    kind: executable-test
+    role: applicability-integration-behavior
+    sha256: f032db281e4b6265e46d8cddd45d358b7ebd41759b41fc022441bce182dd1324
   - path: .guvna/agent-state/proposals/gate-2-semantic-ir-proposal.md
     kind: implementation-specification
     role: semantic-ir-and-deterministic-algorithms

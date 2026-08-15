@@ -9,15 +9,21 @@ import { compareSemanticVersions, parseSemanticVersion } from "../../src/compile
 describe("compiler foundations", () => {
   it("serializes compact JSON and rejects unsupported values", () => {
     expect(new TextDecoder().decode(serializeCompactJson({ a: -0, text: "a\n" }).bytes)).toBe('{"a":0,"text":"a\\n"}');
+    expect(new TextDecoder().decode(serializeCompactJson({ sourceSection: "section", sourceIdentity: { identityKind: "semantic", value: "source" } }).bytes)).toBe('{"sourceIdentity":{"identityKind":"semantic","value":"source"},"sourceSection":"section"}');
     expect(serializeCompactJson("\ud800").ok).toBe(false);
     expect(serializeCompactJson(Infinity).ok).toBe(false);
+    expect(serializeCompactJson({ sourceIdentity: undefined }).ok).toBe(false);
   });
 
   it("uses Semantic IR interface field order regardless of object insertion order", () => {
     const ir = { irVersion: "1", irKind: "guvna-semantic-ir", semanticIdentity: { value: "id", identityKind: "semantic" }, semanticScope: { meaning: { terms: [], statement: "scope" }, identity: { value: "scope", identityKind: "scope" } }, meaning: { terms: [], statement: "meaning" }, concepts: [], relationships: [], constraints: [], transitions: [], derivations: [], contracts: [], realizations: [], authorityContext: { authorityDecisions: [], acceptances: [], uncertainty: [], contradictions: [], delegations: [] }, provenance: { records: [], conflicts: [] }, compatibility: [] };
     const serialization = serializeSemanticIR(ir);
     expect(serialization.ok).toBe(true);
-    if (serialization.ok) expect(new TextDecoder().decode(serialization.bytes)).toContain('"semanticIdentity":{"identityKind":"semantic","value":"id"}');
+    if (serialization.ok) {
+      const json = new TextDecoder().decode(serialization.bytes);
+      expect(json).toContain('"semanticIdentity":{"identityKind":"semantic","value":"id"}');
+      expect(json).not.toContain('"semanticVersion"');
+    }
   });
 
   it("creates base64url identities and SHA-256 digests from exact preimage bytes", () => {
@@ -50,10 +56,10 @@ describe("compiler foundations", () => {
     const ref = (value: string) => ({ identity: identity(value) });
     const scope = { identity: identity("scope"), meaning: { statement: "scope", terms: [] } };
     const provenance = [{ sourceIdentity: identity("source") }];
-    const decision = (decisionIdentity: string, subjectIdentity: string) => ({ identity: identity(decisionIdentity), authorityIdentity: { identity: identity("authority"), principal: ref("principal"), provenance }, subject: ref(subjectIdentity), scope, decision: "ratify" as const, provenance });
+    const decision = (decisionIdentity: string, subjectIdentity: string) => ({ identity: identity(decisionIdentity), authorityIdentity: { identity: identity("authority"), principal: ref("principal"), provenance }, subject: ref(subjectIdentity), scope, subjectContractIdentity: identity(subjectIdentity), subjectContractVersion: "1.0.0", decision: "ratify" as const, provenance });
     const priorDecision = decision("prior-decision", "p");
     const requirementSetDecision = decision("requirement-set-decision", "requirements");
-    const applicabilityDecision = { identity: identity("apply-decision"), authorityIdentity: priorDecision.authorityIdentity, subject: ref("p"), scope, operation: "apply" as const, effectiveBoundary: { identity: identity("boundary"), provenance }, provenance };
+    const applicabilityDecision = { identity: identity("apply-decision"), authorityIdentity: priorDecision.authorityIdentity, subject: ref("p"), scope, subjectContractIdentity: identity("p"), subjectContractVersion: "1.0.0", operation: "apply" as const, effectiveBoundary: { identity: identity("boundary"), provenance }, provenance };
     const subject = (value: string, version: string) => ({ identity: identity(value), version: { value: version, semanticIdentity: ref(value), scope }, scope, provenance });
     const evidence = (value: string) => ({ identity: identity(value), provenance });
     const delta = { prior: { subject: subject("p", "1.0.0"), applicability: { applicable: true as const, scope, authorityDecision: ref("apply-decision"), provenance }, ratification: { ratified: true as const, requiresHumanAuthority: true as const, authorityDecision: ref("prior-decision"), provenance }, ratificationDecision: priorDecision, applicabilityDecision }, candidate: { subject: subject("c", "2.0.0"), lifecycleState: "candidate" as const, provenance }, requirementSet: { identity: identity("requirements"), governedScope: scope, requirements: [requirement], authorityDecision: requirementSetDecision, provenance }, changedMeaning: evidence("meaning"), changedObligations: evidence("obligations"), changedStatesAndTransitions: evidence("states"), changedInvariants: evidence("invariants"), changedAuthorityRequirements: evidence("authority-requirements"), changedProvenanceRequirements: evidence("provenance-requirements"), changedCompatibilityRequirements: evidence("compatibility-requirements"), changedFailureSemantics: evidence("failure-semantics"), compatibilityImplications: evidence("implications"), affectedRealizationObligations: evidence("realization-obligations"), sourceProvenance: provenance, authorityAttribution: requirementSetDecision };

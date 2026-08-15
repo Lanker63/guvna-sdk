@@ -22,10 +22,10 @@ export interface SemanticRelationship { identity: SemanticIdentity; subject: Sem
 export interface SemanticConstraint { identity: SemanticIdentity; subject: SemanticRef; kind: "invariant" | "compatibility" | "authority" | "condition" | "ambiguity"; meaning: MeaningContext; enforcementScope: SemanticScope; provenance: ProvenanceRef[]; }
 export interface SemanticTransition { identity: SemanticIdentity; from: SemanticRef; operation: SemanticRef; to: SemanticRef; authorityReference: SemanticRef; scope: SemanticScope; provenance: ProvenanceRef[]; }
 export interface SemanticDerivation { identity: SemanticIdentity; sources: SemanticRef[]; result: SemanticRef; relation: "derives" | "projects" | "realizes" | "compiles" | "normalizes"; transformation: MeaningContext; provenance: ProvenanceRef[]; }
-export interface SemanticContractReference { identity: SemanticIdentity; contractKind: "semantic" | "runtime" | "sdk" | "projection"; lifecycle: LifecycleContext; applicability: ApplicabilityContext; ratification: RatificationContext; provenance: ProvenanceRef[]; }
+export interface SemanticContractReference { identity: SemanticIdentity; version: SemanticVersion; contractKind: "semantic" | "runtime" | "sdk" | "projection"; lifecycle: LifecycleContext; applicability: ApplicabilityContext; ratification: RatificationContext; provenance: ProvenanceRef[]; }
 export interface RealizationReference { identity: SemanticIdentity; realizationKind: "runtime" | "sdk" | "host" | "governance-projection"; realizes: SemanticRef; conformsTo: SemanticRef[]; compatibility: CompatibilityContext; provenance: ProvenanceRef[]; }
 export interface AuthorityIdentity { identity: SemanticIdentity; principal: SemanticRef; provenance: ProvenanceRef[]; }
-export interface AuthorityDecision { identity: SemanticIdentity; authorityIdentity: AuthorityIdentity; subject: SemanticRef; scope: SemanticScope; decision: "accept" | "reject" | "ratify" | "supersede" | "retire" | "delegate"; provenance: ProvenanceRef[]; }
+export interface AuthorityDecision { identity: SemanticIdentity; authorityIdentity: AuthorityIdentity; subject: SemanticRef; scope: SemanticScope; subjectContractIdentity: SemanticIdentity; subjectContractVersion: string; decision: "accept" | "reject" | "ratify" | "apply" | "supersede" | "retire" | "delegate"; provenance: ProvenanceRef[]; }
 export interface AcceptanceRecord { identity: SemanticIdentity; subject: SemanticRef; scope: SemanticScope; authorityDecision: SemanticRef; provenance: ProvenanceRef[]; }
 export interface CapabilityRef { identity: SemanticIdentity; capability: SemanticRef; }
 export interface ConditionRef { identity: SemanticIdentity; condition: MeaningContext; provenance: ProvenanceRef[]; }
@@ -44,12 +44,23 @@ export interface SemanticIR { irKind: "guvna-semantic-ir"; irVersion: string; se
 export type StructuralValidationResult =
   | { valid: true }
   | { valid: false; reason: string };
+export type SemanticValidationResult =
+  | { valid: true }
+  | { valid: false; reason: string; stage: "semantic" };
+export type SemanticIRValidationResult = StructuralValidationResult | SemanticValidationResult;
 
 const REQUIRED_IR_FIELDS = ["irKind", "irVersion", "semanticIdentity", "semanticScope", "meaning", "concepts", "relationships", "constraints", "transitions", "derivations", "contracts", "realizations", "authorityContext", "provenance", "compatibility"];
 const OPTIONAL_IR_FIELDS = ["semanticVersion"];
 export const SEMANTIC_IR_FIELD_ORDER = ["irKind", "irVersion", "semanticIdentity", "semanticVersion", "semanticScope", "meaning", "concepts", "relationships", "constraints", "transitions", "derivations", "contracts", "realizations", "authorityContext", "provenance", "compatibility"];
 
-export function validateSemanticIR(value: unknown): StructuralValidationResult {
+export function validateSemanticIR(value: unknown): SemanticIRValidationResult {
+  const structural = validateSemanticIRStructure(value);
+  if (!structural.valid) return structural;
+  if (!hasAttributableAuthorityLinks(value as SemanticIR)) return { valid: false, reason: "Accepted or ratified meaning lacks attributable authority", stage: "semantic" };
+  return { valid: true };
+}
+
+export function validateSemanticIRStructure(value: unknown): StructuralValidationResult {
   if (!isRecord(value)) return invalid("SemanticIR must be an object");
   if (!hasOnlyFields(value, REQUIRED_IR_FIELDS, OPTIONAL_IR_FIELDS)) return invalid("SemanticIR fields are invalid");
   if (value.irKind !== "guvna-semantic-ir" || !isNonEmptyString(value.irVersion)) return invalid("SemanticIR kind or version is invalid");
@@ -79,7 +90,7 @@ function isRelationship(value: unknown): boolean { return isRecord(value) && has
 function isConstraint(value: unknown): boolean { return isRecord(value) && hasOnlyFields(value, ["identity", "subject", "kind", "meaning", "enforcementScope", "provenance"], []) && isIdentity(value.identity) && isRef(value.subject) && ["invariant", "compatibility", "authority", "condition", "ambiguity"].includes(value.kind as string) && isMeaning(value.meaning) && isScope(value.enforcementScope) && isArrayOf(value.provenance, isProvenanceRef); }
 function isTransition(value: unknown): boolean { return isRecord(value) && hasOnlyFields(value, ["identity", "from", "operation", "to", "authorityReference", "scope", "provenance"], []) && isIdentity(value.identity) && isRef(value.from) && isRef(value.operation) && isRef(value.to) && isRef(value.authorityReference) && isScope(value.scope) && isArrayOf(value.provenance, isProvenanceRef); }
 function isDerivation(value: unknown): boolean { return isRecord(value) && hasOnlyFields(value, ["identity", "sources", "result", "relation", "transformation", "provenance"], []) && isIdentity(value.identity) && isArrayOf(value.sources, isRef) && isRef(value.result) && ["derives", "projects", "realizes", "compiles", "normalizes"].includes(value.relation as string) && isMeaning(value.transformation) && isArrayOf(value.provenance, isProvenanceRef); }
-function isContract(value: unknown): boolean { return isRecord(value) && hasOnlyFields(value, ["identity", "contractKind", "lifecycle", "applicability", "ratification", "provenance"], []) && isIdentity(value.identity) && ["semantic", "runtime", "sdk", "projection"].includes(value.contractKind as string) && isLifecycle(value.lifecycle) && isApplicability(value.applicability) && isRatification(value.ratification) && isArrayOf(value.provenance, isProvenanceRef); }
+function isContract(value: unknown): boolean { return isRecord(value) && hasOnlyFields(value, ["identity", "version", "contractKind", "lifecycle", "applicability", "ratification", "provenance"], []) && isIdentity(value.identity) && isSemanticVersion(value.version) && sameIdentity(value.version.semanticIdentity.identity, value.identity) && ["semantic", "runtime", "sdk", "projection"].includes(value.contractKind as string) && isLifecycle(value.lifecycle) && isApplicability(value.applicability) && isRatification(value.ratification) && isArrayOf(value.provenance, isProvenanceRef); }
 function isApplicability(value: unknown): boolean { return isRecord(value) && hasOnlyFields(value, ["applicable", "scope", "conditions", "provenance"], ["authorityDecision"]) && (typeof value.applicable === "boolean" || value.applicable === "indeterminate") && isScope(value.scope) && isArrayOf(value.conditions, isCondition) && isArrayOf(value.provenance, isProvenanceRef) && (value.authorityDecision === undefined || isRef(value.authorityDecision)); }
 function isRatification(value: unknown): boolean { return isRecord(value) && hasOnlyFields(value, ["ratified", "requiresHumanAuthority", "provenance"], ["authorityDecision"]) && typeof value.ratified === "boolean" && typeof value.requiresHumanAuthority === "boolean" && isArrayOf(value.provenance, isProvenanceRef) && (value.authorityDecision === undefined || isRef(value.authorityDecision)); }
 function isCondition(value: unknown): boolean { return isRecord(value) && hasOnlyFields(value, ["identity", "condition", "provenance"], []) && isIdentity(value.identity) && isMeaning(value.condition) && isArrayOf(value.provenance, isProvenanceRef); }
@@ -87,7 +98,7 @@ function isRealization(value: unknown): boolean { return isRecord(value) && hasO
 function isCompatibilityContext(value: unknown): boolean { return isRecord(value) && hasOnlyFields(value, ["requirements", "result", "provenance"], []) && isArrayOf(value.requirements, isRef) && ["compatible", "incompatible", "indeterminate"].includes(value.result as string) && isArrayOf(value.provenance, isProvenanceRef); }
 function isAuthorityContext(value: unknown): boolean { return isRecord(value) && hasOnlyFields(value, ["authorityDecisions", "acceptances", "uncertainty", "contradictions", "delegations"], []) && isArrayOf(value.authorityDecisions, isAuthorityDecision) && isArrayOf(value.acceptances, isAcceptanceRecord) && isArrayOf(value.uncertainty, isUncertainty) && isArrayOf(value.contradictions, isContradiction) && isArrayOf(value.delegations, isDelegation); }
 function isAuthorityIdentity(value: unknown): boolean { return isRecord(value) && hasOnlyFields(value, ["identity", "principal", "provenance"], []) && isIdentity(value.identity) && isRef(value.principal) && isArrayOf(value.provenance, isProvenanceRef); }
-function isAuthorityDecision(value: unknown): boolean { return isRecord(value) && hasOnlyFields(value, ["identity", "authorityIdentity", "subject", "scope", "decision", "provenance"], []) && isIdentity(value.identity) && isAuthorityIdentity(value.authorityIdentity) && isRef(value.subject) && isScope(value.scope) && ["accept", "reject", "ratify", "supersede", "retire", "delegate"].includes(value.decision as string) && isArrayOf(value.provenance, isProvenanceRef); }
+function isAuthorityDecision(value: unknown): boolean { return isRecord(value) && hasOnlyFields(value, ["identity", "authorityIdentity", "subject", "scope", "subjectContractIdentity", "subjectContractVersion", "decision", "provenance"], []) && isIdentity(value.identity) && isAuthorityIdentity(value.authorityIdentity) && isRef(value.subject) && isScope(value.scope) && isIdentity(value.subjectContractIdentity) && isNonEmptyString(value.subjectContractVersion) && ["accept", "reject", "ratify", "apply", "supersede", "retire", "delegate"].includes(value.decision as string) && isArrayOf(value.provenance, isProvenanceRef); }
 function isAcceptanceRecord(value: unknown): boolean { return isRecord(value) && hasOnlyFields(value, ["identity", "subject", "scope", "authorityDecision", "provenance"], []) && isIdentity(value.identity) && isRef(value.subject) && isScope(value.scope) && isRef(value.authorityDecision) && isArrayOf(value.provenance, isProvenanceRef); }
 function isUncertainty(value: unknown): boolean { return isRecord(value) && hasOnlyFields(value, ["identity", "subject", "meaning", "provenance"], []) && isIdentity(value.identity) && isRef(value.subject) && isMeaning(value.meaning) && isArrayOf(value.provenance, isProvenanceRef); }
 function isContradiction(value: unknown): boolean { return isRecord(value) && hasOnlyFields(value, ["identity", "claims", "scope", "interpretation", "provenance"], []) && isIdentity(value.identity) && isArrayOf(value.claims, isRef) && isScope(value.scope) && isMeaning(value.interpretation) && isArrayOf(value.provenance, isProvenanceRef); }
@@ -99,3 +110,24 @@ function isTransformation(value: unknown): boolean { return isRecord(value) && h
 function isConflict(value: unknown): boolean { return isRecord(value) && hasOnlyFields(value, ["identity", "sources"], ["resolution"]) && isIdentity(value.identity) && isArrayOf(value.sources, isProvenanceRef) && (value.resolution === undefined || isRef(value.resolution)); }
 function isCompatibilityRequirement(value: unknown): boolean { return isRecord(value) && hasOnlyFields(value, ["identity", "subject", "scope", "meaning"], ["consumer", "contract", "dependency"]) && isIdentity(value.identity) && isRef(value.subject) && isScope(value.scope) && isMeaning(value.meaning) && [value.consumer, value.contract, value.dependency].every((item) => item === undefined || isRef(item)); }
 function isJson(value: unknown): boolean { if (value === null || typeof value === "boolean" || typeof value === "string") return true; if (typeof value === "number") return Number.isFinite(value); if (Array.isArray(value)) return value.every(isJson); return isRecord(value) && Object.values(value).every(isJson); }
+
+function hasAttributableAuthorityLinks(value: SemanticIR): boolean {
+  const decisions = value.authorityContext.authorityDecisions;
+  const decisionFor = (reference: SemanticRef | undefined, subject: SemanticIdentity, scope: SemanticScope, expectedDecision: AuthorityDecision["decision"], contractIdentity: SemanticIdentity, contractVersion: string | undefined): boolean => {
+    if (!reference) return false;
+    const decision = decisions.find((candidate) => sameIdentity(candidate.identity, reference.identity));
+    return Boolean(decision && decision.decision === expectedDecision && sameIdentity(decision.subject.identity, subject) && sameScope(decision.scope, scope) && sameIdentity(decision.subjectContractIdentity, contractIdentity) && contractVersion !== undefined && decision.subjectContractVersion === contractVersion);
+  };
+  const semanticVersion = value.semanticVersion?.value;
+  return value.concepts.every((entity) => !entity.acceptance.accepted || decisionFor(entity.acceptance.authorityDecision, entity.identity, entity.acceptance.scope, "accept", value.semanticIdentity, semanticVersion)) &&
+    value.contracts.every((contract) => (!contract.ratification.ratified || decisionFor(contract.ratification.authorityDecision, contract.identity, contract.applicability.scope, "ratify", contract.identity, contract.version.value)) &&
+      (contract.applicability.applicable !== true || (contract.ratification.ratified && decisionFor(contract.applicability.authorityDecision, contract.identity, contract.applicability.scope, "apply", contract.identity, contract.version.value))));
+}
+
+function sameIdentity(left: SemanticIdentity, right: SemanticIdentity): boolean { return left.identityKind === right.identityKind && left.value === right.value; }
+function sameScope(left: SemanticScope, right: SemanticScope): boolean {
+  return sameIdentity(left.identity, right.identity) &&
+    left.meaning.statement === right.meaning.statement &&
+    left.meaning.terms.length === right.meaning.terms.length &&
+    left.meaning.terms.every((term, index) => sameIdentity(term.identity, right.meaning.terms[index].identity));
+}

@@ -30,15 +30,20 @@ pnpm -C core test
 
 ## Phase B: Applicability Integration
 
-**Status:** WAITING - no new integration primitive is specified. This phase may
-begin only when a concrete compiler primitive needs applicability evaluation
-and receives the required supplied input shape.
+**Status:** COMPLETE - the supplied-input integration primitive and focused
+tests are present in `contract-applicability.ts` and
+`contract-applicability.test.ts`.
 
 Keep [`determineApplicability`](../../core/src/compiler/applicability-determination.ts)
 as an independent supplied-input evaluator. New compiler primitives may call it
 only after assembling the same externally supplied authority, scope, validity,
 effective-boundary, and provenance input shape. They must not expand it into
 ratification, authority mutation, artifact loading, or repository applicability.
+
+The completed integration primitive preserves those boundaries: it assembles
+the supplied contract identity and semantic version, delegates evaluation, and
+returns the result with available authority and provenance fields. It does not
+load artifacts, mutate authority, or establish repository applicability.
 
 ## Phase C: Stop Boundary
 
@@ -55,7 +60,5 @@ not inferred behavior.
 
 ## Next Action
 
-No executable action is currently scheduled. Revisit Phase B only when a new
-compiler primitive with the required externally supplied applicability inputs
-is explicitly added to the plan. Phase C remains blocked pending the missing
+No Phase B action is scheduled. Phase C remains blocked pending the missing
 authoritative Contract and interface specifications.

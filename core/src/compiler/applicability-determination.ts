@@ -21,6 +21,8 @@ export interface AuthorityInput<Provenance = unknown> {
   authorityIdentity: string;
   decisionIdentity: string;
   decisionVersion: string;
+  subjectContractIdentity: string;
+  subjectContractVersion: string;
   decisionTimestamp?: string;
   attribution: string;
   decision: AuthorityDecision;
@@ -30,6 +32,19 @@ export interface AuthorityInput<Provenance = unknown> {
 
 export interface Evidence<Provenance = unknown> {
   status: EvidenceStatus;
+  provenance: Provenance;
+}
+
+export interface RatificationInput<Provenance = unknown> {
+  ratified: boolean;
+  decision: "ratify";
+  authorityIdentity: string;
+  decisionIdentity: string;
+  decisionVersion: string;
+  contractIdentity: string;
+  contractVersion: string;
+  subjectScope: string;
+  governedScope: string;
   provenance: Provenance;
 }
 
@@ -44,10 +59,13 @@ export interface EffectiveBoundary<Provenance = unknown>
 }
 
 export interface ApplicabilityInputs<Provenance = unknown> {
+  subjectContractIdentity: string;
+  subjectSemanticVersion: string;
   authority: AuthorityInput<Provenance>;
   governedScope: string;
   subjectScope: string;
   validated: boolean;
+  ratification: RatificationInput<Provenance>;
   validity: Evidence<Provenance>;
   effectiveBoundary: EffectiveBoundary<Provenance>;
 }
@@ -59,6 +77,7 @@ export interface ApplicabilityDetermination<Provenance = unknown> {
 
 export interface DeterminationProvenance<Provenance = unknown> {
   authority: Provenance | undefined;
+  ratification: Provenance | undefined;
   validity: Provenance | undefined;
   effectiveBoundary: Provenance | undefined;
 }
@@ -78,7 +97,14 @@ export function determineApplicability<Provenance>(
 
   if (
     inputs.governedScope !== ESTABLISHED_GOVERNED_SCOPE ||
+    inputs.ratification.contractIdentity !== inputs.subjectContractIdentity ||
+    inputs.ratification.contractVersion !== inputs.subjectSemanticVersion ||
+    inputs.authority.subjectContractIdentity !== inputs.subjectContractIdentity ||
+    inputs.authority.subjectContractVersion !== inputs.subjectSemanticVersion ||
+    inputs.ratification.governedScope !== inputs.governedScope ||
+    inputs.ratification.subjectScope !== inputs.subjectScope ||
     !inputs.validated ||
+    !inputs.ratification.ratified ||
     inputs.validity.status !== "valid" ||
     inputs.effectiveBoundary.status !== "valid"
   ) {
@@ -110,6 +136,8 @@ function hasRequiredInputValues<Provenance>(
     inputs.authority.decisionIdentity.length > 0 &&
     typeof inputs.authority.decisionVersion === "string" &&
     inputs.authority.decisionVersion.length > 0 &&
+    isNonEmptyString(inputs.authority.subjectContractIdentity) &&
+    isNonEmptyString(inputs.authority.subjectContractVersion) &&
     typeof inputs.authority.attribution === "string" &&
     inputs.authority.attribution.length > 0 &&
     (inputs.authority.decision === "applicable" ||
@@ -119,9 +147,12 @@ function hasRequiredInputValues<Provenance>(
     isValidOptionalDecisionTimestamp(inputs.authority.decisionTimestamp) &&
     typeof inputs.governedScope === "string" &&
     inputs.governedScope.length > 0 &&
+    isNonEmptyString(inputs.subjectContractIdentity) &&
+    isNonEmptyString(inputs.subjectSemanticVersion) &&
     typeof inputs.subjectScope === "string" &&
     inputs.subjectScope.length > 0 &&
     typeof inputs.validated === "boolean" &&
+    isValidRatification(inputs.ratification) &&
     inputs.validity !== null &&
     typeof inputs.validity === "object" &&
     inputs.validity.provenance !== undefined &&
@@ -132,6 +163,20 @@ function hasRequiredInputValues<Provenance>(
       inputs.effectiveBoundary.declaration,
     )
   );
+}
+
+function isValidRatification<Provenance>(value: unknown): value is RatificationInput<Provenance> {
+  if (!isRecord(value)) return false;
+  return value.ratified === true &&
+    value.decision === "ratify" &&
+    isNonEmptyString(value.authorityIdentity) &&
+    isNonEmptyString(value.decisionIdentity) &&
+    isNonEmptyString(value.decisionVersion) &&
+    isNonEmptyString(value.contractIdentity) &&
+    isNonEmptyString(value.contractVersion) &&
+    isNonEmptyString(value.subjectScope) &&
+    isNonEmptyString(value.governedScope) &&
+    value.provenance !== undefined;
 }
 
 function isValidOptionalDecisionTimestamp(value: unknown): boolean {
@@ -193,6 +238,7 @@ function createAvailableProvenance<Provenance>(
 ): DeterminationProvenance<Provenance> {
   return {
     authority: inputs.authority?.provenance,
+    ratification: inputs.ratification?.provenance,
     validity: inputs.validity?.provenance,
     effectiveBoundary: inputs.effectiveBoundary?.provenance,
   };
@@ -203,6 +249,7 @@ function createProvenance<Provenance>(
 ): DeterminationProvenance<Provenance> {
   return {
     authority: inputs.authority.provenance,
+    ratification: inputs.ratification.provenance,
     validity: inputs.validity.provenance,
     effectiveBoundary: inputs.effectiveBoundary.provenance,
   };

@@ -41,12 +41,14 @@ function encode(value: unknown, ancestors: Set<object>, fieldOrder?: readonly st
 }
 
 const IR_RECORD_FIELD_ORDERS = [
+  ["identity", "version", "contractKind", "lifecycle", "applicability", "ratification", "provenance"],
   ["identityKind", "value"], ["identity"], ["value", "semanticIdentity", "scope"], ["identity", "meaning"], ["statement", "terms"], ["sourceIdentity", "sourcePath", "sourceSection"], ["lifecycleState", "transitions"], ["accepted", "scope", "authorityDecision", "provenance"], ["applicable", "scope", "conditions", "authorityDecision", "provenance"], ["ratified", "authorityDecision", "requiresHumanAuthority", "provenance"], ["identity", "meaning", "value"], ["identity", "kind", "meaning", "attributes", "lifecycle", "acceptance", "provenance"], ["identity", "subject", "predicate", "object", "scope", "constraints", "provenance"], ["identity", "subject", "kind", "meaning", "enforcementScope", "provenance"], ["identity", "from", "operation", "to", "authorityReference", "scope", "provenance"], ["identity", "sources", "result", "relation", "transformation", "provenance"], ["identity", "contractKind", "lifecycle", "applicability", "ratification", "provenance"], ["identity", "realizationKind", "realizes", "conformsTo", "compatibility", "provenance"], ["authorityDecisions", "acceptances", "uncertainty", "contradictions", "delegations"], ["records", "conflicts"], ["identity", "subject", "scope", "meaning", "consumer", "contract", "dependency"], ["requirements", "result", "provenance"], ["identity", "condition", "provenance"], ["identity", "kind", "inputs", "outputs"], ["identity", "subject", "sources", "transformations", "authorityDecision"], ["identity", "sources", "resolution"],
 ];
 
 function canonicalFieldOrder(value: object): readonly string[] | undefined {
   const keys = Object.keys(value);
-  return IR_RECORD_FIELD_ORDERS.find((order) => keys.every((key) => order.includes(key)) && order.filter((key) => keys.includes(key)).length === keys.length);
+  const order = IR_RECORD_FIELD_ORDERS.find((candidate) => keys.every((key) => candidate.includes(key)) && candidate.filter((key) => keys.includes(key)).length === keys.length);
+  return order?.filter((key) => key in value);
 }
 
 function assertScalarString(value: string): string {

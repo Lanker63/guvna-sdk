@@ -17,10 +17,12 @@ Guvna semantic boundary.
 ## Current Executable Boundary
 
 [`core/src/compiler/applicability-determination.ts`](../../core/src/compiler/applicability-determination.ts)
-is the sole production module. It evaluates caller-supplied authority, scope,
-validity, and effective-boundary inputs. It returns `applicable`,
-`not-applicable`, or `indeterminate` and preserves available provenance.
+is the independent supplied-input evaluator. The integration boundary is
+[`core/src/compiler/contract-applicability.ts`](../../core/src/compiler/contract-applicability.ts),
+which assembles supplied contract identity and semantic version inputs, delegates
+to the evaluator, and returns the tri-state result with available authority and
+provenance.
 
-It does not load a contract, ratify a contract, create or alter an authority
-decision, consume repository knowledge, start Runtime, expose an SDK, persist
-state, or communicate with a Host.
+These compiler primitives do not load a contract, ratify a contract, create or
+alter an authority decision, consume repository knowledge, start Runtime, expose
+an SDK, persist state, or communicate with a Host.

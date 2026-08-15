@@ -30,7 +30,15 @@ export function evaluateSuppliedContractApplicability<Provenance>(
   input: SuppliedContractApplicabilityInput<Provenance> | null | undefined,
 ): ContractApplicabilityRecord<Provenance> {
   const applicability = input?.applicability;
-  const determination = determineApplicability(applicability);
+  const determination = determineApplicability(
+    applicability && input
+      ? {
+          ...applicability,
+          subjectContractIdentity: input.subjectContractIdentity,
+          subjectSemanticVersion: input.subjectSemanticVersion,
+        }
+      : applicability,
+  );
   const authority = applicability?.authority;
   const hasSubjectIdentity = isNonEmptyString(input?.subjectContractIdentity);
   const hasSubjectVersion = isNonEmptyString(input?.subjectSemanticVersion);

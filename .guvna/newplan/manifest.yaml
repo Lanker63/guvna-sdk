@@ -14,13 +14,13 @@ artifacts:
     sha256: 03f81f14f8580259761a9e9c47d42050bd190584bdcfb541fcddb7f5bbced0f7
   - path: sources.yaml
     kind: source-reference-registry
-    sha256: 97479fd680f108d002dd2b8fe9092e57430edfcbf83a16a4caf89ba69d68fdb9
+    sha256: 9a619be959ee5f2023c6f8914214582c075ee0ec76ed75b12f685ef1b06cfbaa
   - path: sources.sha256
     kind: source-integrity-checksums
-    sha256: 4601c488919311ec6e1e21264f054168f394fc4048ceab770077a4b0407b886b
+    sha256: 95633ab4dd8d1f34fe127f53fb14bff163f0b22d715f550a825f27999008cc9a
   - path: baseline.md
     kind: architectural-baseline
-    sha256: 7ff38211d3665c902900a5ed0e24c8dacf837d122df0eabec17bc748fe5f8dbd
+    sha256: be9af0fabf93a0237104719319160304fdc0fe52a54e5f140537c9d301a4a00d
   - path: extracts/semantic-ir.md
     kind: normalized-implementation-specification
     sha256: a35cc136e982afb0d6af063f72f9b9ba55fb771df58bf54b36946ec088961474
@@ -35,7 +35,7 @@ artifacts:
     sha256: 88868cf995c0dff8d3783838cafc2071560586018e448a939852463fae72849e
   - path: realization-plan.md
     kind: bounded-engineering-plan
-    sha256: 95c911a432c850bf77a402cff5af1b2b3979ea29306c4ca63fef2d1b1c452129
+    sha256: 7244361f9011dd9cbc44ac799f7cced1e5fc0c4355c750cda94f09f3f8889f89
 exclusions:
   - Contract payloads or reconstructed Contract content
   - Candidate or Applicable Contract artifacts

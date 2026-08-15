@@ -9,6 +9,8 @@ const validInput = {
       authorityIdentity: "authority-1",
       decisionIdentity: "decision-1",
       decisionVersion: "1",
+      subjectContractIdentity: "contract-1",
+      subjectContractVersion: "1.0.0",
       decisionTimestamp: "2026-08-15T14:00:00Z",
       attribution: "human-authority",
       decision: "applicable" as const,
@@ -18,6 +20,20 @@ const validInput = {
     governedScope: "Guvna Semantic Contract semantic boundary",
     subjectScope: "Guvna-owned Semantic Contract expressing accepted Guvna meaning",
     validated: true,
+    ratification: {
+      ratified: true,
+      decision: "ratify" as const,
+      authorityIdentity: "ratifying-authority-1",
+      decisionIdentity: "ratification-1",
+      decisionVersion: "1",
+      subjectContractIdentity: "contract-1",
+      subjectContractVersion: "1.0.0",
+      contractIdentity: "contract-1",
+      contractVersion: "1.0.0",
+      subjectScope: "Guvna-owned Semantic Contract expressing accepted Guvna meaning",
+      governedScope: "Guvna Semantic Contract semantic boundary",
+      provenance: { source: "ratification" },
+    },
     validity: { status: "valid" as const, provenance: { source: "validity" } },
     effectiveBoundary: {
       status: "valid" as const,
@@ -42,6 +58,7 @@ describe("evaluateSuppliedContractApplicability", () => {
       result: "applicable",
       provenance: {
         authority: validInput.applicability.authority.provenance,
+        ratification: validInput.applicability.ratification.provenance,
         validity: validInput.applicability.validity.provenance,
         effectiveBoundary: validInput.applicability.effectiveBoundary.provenance,
       },
@@ -63,6 +80,7 @@ describe("evaluateSuppliedContractApplicability", () => {
     expect(result.result).toBe("not-applicable");
     expect(result.provenance).toEqual({
       authority: validInput.applicability.authority.provenance,
+      ratification: validInput.applicability.ratification.provenance,
       validity: validInput.applicability.validity.provenance,
       effectiveBoundary: validInput.applicability.effectiveBoundary.provenance,
     });
@@ -159,6 +177,7 @@ describe("evaluateSuppliedContractApplicability", () => {
     expect(result.result).toBe("indeterminate");
     expect(result.provenance).toEqual({
       authority: validInput.applicability.authority.provenance,
+      ratification: validInput.applicability.ratification.provenance,
       validity: validInput.applicability.validity.provenance,
       effectiveBoundary: validInput.applicability.effectiveBoundary.provenance,
     });
@@ -173,6 +192,7 @@ describe("evaluateSuppliedContractApplicability", () => {
     expect(result.result).toBe("indeterminate");
     expect(result.provenance).toEqual({
       authority: validInput.applicability.authority.provenance,
+      ratification: validInput.applicability.ratification.provenance,
       validity: validInput.applicability.validity.provenance,
       effectiveBoundary: validInput.applicability.effectiveBoundary.provenance,
     });
