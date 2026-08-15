@@ -21,6 +21,7 @@ export interface AuthorityInput<Provenance = unknown> {
   authorityIdentity: string;
   decisionIdentity: string;
   decisionVersion: string;
+  decisionTimestamp?: string;
   attribution: string;
   decision: AuthorityDecision;
   provenance: Provenance;
@@ -32,13 +33,23 @@ export interface Evidence<Provenance = unknown> {
   provenance: Provenance;
 }
 
+export type EffectiveBoundaryDeclaration =
+  | { kind: "timestamp"; value: string }
+  | { kind: "revision"; value: string }
+  | { kind: "boundary-reference"; identity: string };
+
+export interface EffectiveBoundary<Provenance = unknown>
+  extends Evidence<Provenance> {
+  declaration?: EffectiveBoundaryDeclaration;
+}
+
 export interface ApplicabilityInputs<Provenance = unknown> {
   authority: AuthorityInput<Provenance>;
   governedScope: string;
   subjectScope: string;
   validated: boolean;
   validity: Evidence<Provenance>;
-  effectiveBoundary: Evidence<Provenance>;
+  effectiveBoundary: EffectiveBoundary<Provenance>;
 }
 
 export interface ApplicabilityDetermination<Provenance = unknown> {
@@ -105,6 +116,7 @@ function hasRequiredInputValues<Provenance>(
       inputs.authority.decision === "not-applicable") &&
     inputs.authority.status === "valid" &&
     inputs.authority.provenance !== undefined &&
+    isValidOptionalDecisionTimestamp(inputs.authority.decisionTimestamp) &&
     typeof inputs.governedScope === "string" &&
     inputs.governedScope.length > 0 &&
     typeof inputs.subjectScope === "string" &&
@@ -115,8 +127,56 @@ function hasRequiredInputValues<Provenance>(
     inputs.validity.provenance !== undefined &&
     inputs.effectiveBoundary !== null &&
     typeof inputs.effectiveBoundary === "object" &&
-    inputs.effectiveBoundary.provenance !== undefined
+    inputs.effectiveBoundary.provenance !== undefined &&
+    isValidOptionalEffectiveBoundaryDeclaration(
+      inputs.effectiveBoundary.declaration,
+    )
   );
+}
+
+function isValidOptionalDecisionTimestamp(value: unknown): boolean {
+  return value === undefined || isNonEmptyString(value);
+}
+
+function isValidOptionalEffectiveBoundaryDeclaration(
+  value: unknown,
+): boolean {
+  if (value === undefined) {
+    return true;
+  }
+
+  if (!isRecord(value)) {
+    return false;
+  }
+
+  if (value.kind === "timestamp" || value.kind === "revision") {
+    return hasExactFields(value, ["kind", "value"]) && isNonEmptyString(value.value);
+  }
+
+  return (
+    value.kind === "boundary-reference" &&
+    hasExactFields(value, ["kind", "identity"]) &&
+    isNonEmptyString(value.identity)
+  );
+}
+
+function hasExactFields(
+  value: Record<string, unknown>,
+  expectedFields: string[],
+): boolean {
+  const fields = Object.keys(value);
+  return (
+    fields.length === expectedFields.length &&
+    expectedFields.every((field) => field in value)
+  );
+}
+
+function isRecord(value: unknown): value is Record<string, unknown> {
+  return typeof value === "object" && value !== null && !Array.isArray(value);
+}
+
+function isNonEmptyString(value: unknown): value is string {
+  return typeof value === "string" && value.length > 0;
 }
 
 function indeterminate<Provenance>(
