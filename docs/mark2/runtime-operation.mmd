@@ -1,0 +1,18 @@
+flowchart TD
+    subgraph SYS_B["System B — Ontology USED WITHIN Runtime/Core (content-facing, applied per Governed Repository)"]
+        RInfo["Repository Information"] --> RIntel["Repository Intelligence"]
+        RIntel --> RWis["Repository Wisdom"]
+        RWis --> RAuth["Repository Authority"]
+        RAuth --> ADec["Authority Decision"]
+        ADec --> ACC["Acceptance"]
+        ACC --> RTruth["Repository Truth"]
+        RTruth --> RKnow["Repository Knowledge"]
+        RKnow --> RUnd["Repository Understanding"]
+    end
+
+    subgraph SYS_A_REF["System A (separate — see Chart 1)"]
+        APP2["Applicable Semantic Contract"] --> RT2["Runtime"]
+    end
+
+    RT2 -. "evaluates/enforces this model;\ndoes not author Repository Truth" .-> RInfo
+    RT2 -. "evaluates/enforces this model;\ndoes not author Repository Truth" .-> RTruth

@@ -1,0 +1,20 @@
+flowchart TD
+    subgraph SYS_A["System A — Ontology that DEFINES Runtime/Core (self-referential, architectural)"]
+        CD["Constitutional Doctrine"] --> CM["Canonical Models"]
+        CM --> AD["Architectural Doctrine"]
+        AD --> SC["Semantic Contracts"]
+        SC --> COMP["Semantic Compilation"]
+        COMP --> CAND["Candidate Semantic Contract"]
+        CAND --> VAL["Semantic Validation"]
+        VAL --> RAT["Contract Ratification"]
+        RAT --> APP["Applicable Semantic Contract"]
+        APP --> RT["Runtime"]
+        APP --> SDKX["SDK"]
+        APP --> ART["Compatibility Artifacts"]
+    end
+
+    subgraph SYS_B_REF["System B (separate — see Chart 2)"]
+        RIref["Repository Information ... Repository Understanding"]
+    end
+
+    RT -. "interprets repository content;\ndoes not originate System B's ontology" .-> RIref
