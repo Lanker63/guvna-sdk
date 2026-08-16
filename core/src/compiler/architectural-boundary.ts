@@ -1,8 +1,9 @@
 import type { BoundedArchitecturalView } from "./architectural-view.js";
 import type { SemanticIdentity } from "./semantic-ir.js";
-import { canonicalConceptNames, validateCanonicalModel, type CanonicalConceptName, type CanonicalModel, type SourceAttribution } from "./canonical-model.js";
+import { validateCanonicalModel, type CanonicalConceptName, type CanonicalModel, type SourceAttribution } from "./canonical-model.js";
+import { architecturalModel, validateArchitecturalModel } from "./architectural-model.js";
 
-export const architecturalLayers = ["canonical", "architectural", "contract", "compilation", "candidate", "validation", "ratification", "applicable", "realization"] as const;
+export const architecturalLayers = ["doctrine", "canonical", "architectural", "contract", "compilation", "candidate", "validation", "ratification", "applicable", "realization"] as const;
 export type ArchitecturalLayer = (typeof architecturalLayers)[number];
 export const repositoryProjectionLayers = ["repository", "accepted-knowledge", "understanding", "governance", "projection-compilation", "governance-projection", "projection-contract", "runtime"] as const;
 export type RepositoryProjectionLayer = (typeof repositoryProjectionLayers)[number];
@@ -19,6 +20,7 @@ export interface ArchitecturalBinding {
   path: ArchitecturalPath;
   layer: ArchitecturalBindingLayer;
   owner: SemanticOwner;
+  contentOwner: SemanticOwner;
   provenance: readonly { sourceIdentity: SemanticIdentity; sourcePath?: string; sourceSection?: string }[];
 }
 
@@ -26,6 +28,13 @@ export interface ArchitecturalBoundaryInput {
   view: BoundedArchitecturalView;
   bindings: readonly ArchitecturalBinding[];
   canonicalModel: CanonicalModel;
+  contractBoundary?: ArchitecturalContractBoundaryBinding;
+}
+
+export interface ArchitecturalContractBoundaryBinding {
+  projectionContract: SemanticIdentity;
+  guvnaContract: SemanticIdentity;
+  provenance: readonly { sourceIdentity: SemanticIdentity; sourcePath?: string; sourceSection?: string }[];
 }
 
 export interface ArchitecturalDependency {
@@ -35,6 +44,7 @@ export interface ArchitecturalDependency {
 }
 
 export const architecturalDependencies: readonly ArchitecturalDependency[] = [
+  ["doctrine", "canonical"],
   ["canonical", "architectural"],
   ["architectural", "contract"],
   ["contract", "compilation"],
@@ -77,6 +87,8 @@ export function validateArchitecturalBoundary(input: ArchitecturalBoundaryInput)
   if (!canonicalValidation.ok) return { ok: false, reason: `Canonical model is invalid: ${canonicalValidation.reason}` };
   const dependencyValidation = validateArchitecturalDependencyProjection();
   if (!dependencyValidation.ok) return dependencyValidation;
+  const modelValidation = validateArchitecturalModel(architecturalModel, architecturalDependencies);
+  if (!modelValidation.ok) return modelValidation;
   const identities = new Map<string, SemanticIdentity>();
   for (const identity of [
     input.view.semanticIdentity,
@@ -105,10 +117,18 @@ export function validateArchitecturalBoundary(input: ArchitecturalBoundaryInput)
     if (binding.path === "guvna" && binding.layer !== "realization" && binding.owner !== "guvna") return { ok: false, reason: "Guvna semantic meaning must be Guvna-owned" };
     if (binding.path === "repository" && binding.layer !== "runtime" && binding.owner !== "governed-repository") return { ok: false, reason: "Repository projection meaning must be Governed Repository-owned" };
     if (binding.layer === "runtime" && binding.owner !== "guvna" && binding.owner !== "runtime") return { ok: false, reason: "Runtime semantics must remain Guvna-owned or Runtime-realized" };
+    if (binding.layer !== "realization" && binding.layer !== "runtime" && binding.contentOwner !== binding.owner) return { ok: false, reason: "Architectural content ownership must match semantic ownership" };
     if (binding.provenance.some((provenance) => !identities.has(provenance.sourceIdentity.value))) return { ok: false, reason: "Architectural binding provenance is unresolved" };
     bindings.set(binding.identity.value, binding);
   }
   if (bindings.size !== identities.size) return { ok: false, reason: "Architectural binding is missing" };
+  const projectionContractBindings = [...bindings.values()].filter((binding) => binding.path === "repository" && binding.layer === "projection-contract");
+  if (projectionContractBindings.length > 0) {
+    const boundary = input.contractBoundary;
+    const projectionBinding = boundary && bindings.get(boundary.projectionContract.value);
+    const contractBinding = boundary && bindings.get(boundary.guvnaContract.value);
+    if (!boundary || !projectionBinding || !contractBinding || projectionBinding.path !== "repository" || projectionBinding.layer !== "projection-contract" || contractBinding.path !== "guvna" || contractBinding.layer !== "contract" || contractBinding.owner !== "guvna" || contractBinding.contentOwner !== "guvna" || boundary.provenance.length === 0 || boundary.provenance.some((provenance) => !identities.has(provenance.sourceIdentity.value))) return { ok: false, reason: "Repository projection contract has no attributable Guvna contract boundary" };
+  }
   for (const derivation of input.view.derivations) {
     const result = bindings.get(derivation.result.identity.value);
     if (!result || derivation.sources.some((source) => {
@@ -121,7 +141,25 @@ export function validateArchitecturalBoundary(input: ArchitecturalBoundaryInput)
     const sourceBinding = bindings.get(realization.realizes.identity.value);
     const contracts = input.view.contracts.filter((contract) => realization.conformsTo.some((reference) => reference.identity.value === contract.identity.value));
     if (!realizationBinding || !sourceBinding || realizationBinding.layer !== (realizationBinding.path === "guvna" ? "realization" : "runtime") || sourceBinding.layer === realizationBinding.layer) return { ok: false, reason: "Realization boundary is invalid" };
+    const expectedOwner = realization.realizationKind === "runtime" ? "runtime" : realization.realizationKind === "sdk" ? "guvna" : realization.realizationKind === "host" ? "host" : "governed-repository";
+    if (realizationBinding.owner !== expectedOwner) return { ok: false, reason: "Realization owner does not match realization kind" };
+    const expectedContentOwner = realization.realizationKind === "sdk" ? "sdk" : expectedOwner;
+    if (realizationBinding.contentOwner !== expectedContentOwner) return { ok: false, reason: "Realization content ownership does not match realization kind" };
+    if (contracts.some((contract) => {
+      const decisions = input.view.authorityContext.authorityDecisions;
+      if (contract.ratification.ratified && !hasAuthorityDecision(decisions, contract.ratification.authorityDecision?.identity.value, "ratify", contract)) return true;
+      if (contract.applicability.applicable !== true) return false;
+      if (!hasAuthorityDecision(decisions, contract.applicability.authorityDecision?.identity.value, "apply", contract)) return true;
+      const applicabilityDecision = decisions.find((decision) => decision.identity.value === contract.applicability.authorityDecision?.identity.value);
+      const ratificationDecision = decisions.find((decision) => decision.identity.value === contract.ratification.authorityDecision?.identity.value);
+      return !applicabilityDecision || !ratificationDecision || applicabilityDecision.scope.identity.value !== contract.applicability.scope.identity.value || ratificationDecision.scope.identity.value !== contract.applicability.scope.identity.value;
+    })) return { ok: false, reason: "Realization authority scope is not attributable" };
     if (contracts.length === 0 || realization.compatibility.result !== "compatible" || contracts.some((contract) => contract.applicability.applicable !== true || !contract.ratification.ratified)) return { ok: false, reason: "Realization contract applicability is invalid" };
   }
   return { ok: true };
+}
+
+function hasAuthorityDecision(decisions: readonly BoundedArchitecturalView["authorityContext"]["authorityDecisions"][number][], identity: string | undefined, expectedDecision: "ratify" | "apply", contract: BoundedArchitecturalView["contracts"][number]): boolean {
+  const decision = decisions.find((candidate) => candidate.identity.value === identity);
+  return Boolean(decision && decision.decision === expectedDecision && decision.subjectContractIdentity.value === contract.identity.value && decision.subjectContractVersion === contract.version.value && decision.scope.identity.value === contract.applicability.scope.identity.value);
 }
