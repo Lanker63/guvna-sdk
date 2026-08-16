@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { validateSemanticIR } from "../../src/compiler/semantic-ir.js";
 import { validateSemanticContract } from "../../src/compiler/semantic-contract.js";
+import { compileCandidateSemanticContract } from "../../src/compiler/semantic-compilation.js";
 
 const identity = { identityKind: "semantic", value: "abc" };
 const meaning = { statement: "Meaning", terms: [] };
@@ -198,5 +199,55 @@ describe("validateSemanticContract", () => {
     };
 
     expect(validateSemanticContract(contract as never).valid).toBe(false);
+  });
+});
+
+describe("compileCandidateSemanticContract", () => {
+  it("preserves source identity and bindings while producing a non-applicable candidate", () => {
+    const contract = {
+      identity,
+      version: { value: "1.0.0", semanticIdentity: { identity }, scope },
+      contractKind: "semantic" as const,
+      elements: contractElements,
+      lifecycle: { lifecycleState: { identity }, transitions: [] },
+      applicability: { applicable: "indeterminate" as const, scope, conditions: [], provenance: [] },
+      ratification: { ratified: false, requiresHumanAuthority: true, provenance: [] },
+      provenance: [{ sourceIdentity: identity }],
+    };
+    const result = compileCandidateSemanticContract({ ...validIR, contracts: [contract] });
+
+    expect(result.ok).toBe(true);
+    if (result.ok) {
+      expect(result.contract.identity).toEqual(identity);
+      expect(result.contract.elements).toEqual(contractElements);
+      expect(result.contract.lifecycle.lifecycleState.identity.value).toBe("candidate");
+      expect(result.contract.applicability.applicable).toBe("indeterminate");
+      expect(result.contract.ratification.ratified).toBe(false);
+      expect(result.contract.applicability.authorityDecision).toBeUndefined();
+      expect(result.contract.ratification.authorityDecision).toBeUndefined();
+      expect(result.provenance.subject).toEqual({ identity });
+      expect(result.provenance.transformations[0].kind).toBe("compile");
+      expect(result.provenance.transformations[0].inputs).toEqual([{ identity }]);
+      expect(result.provenance.transformations[0].outputs).toEqual([{ identity }]);
+    }
+  });
+
+  it("fails closed when semantic contract source is absent", () => {
+    expect(compileCandidateSemanticContract(validIR)).toEqual({ ok: false, reason: "Semantic Contract source is absent", stage: "compilation" });
+  });
+
+  it("fails closed when semantic contract source is ambiguous", () => {
+    const contract = {
+      identity,
+      version: { value: "1.0.0", semanticIdentity: { identity }, scope },
+      contractKind: "semantic" as const,
+      elements: contractElements,
+      lifecycle: { lifecycleState: { identity }, transitions: [] },
+      applicability: { applicable: "indeterminate" as const, scope, conditions: [], provenance: [] },
+      ratification: { ratified: false, requiresHumanAuthority: true, provenance: [] },
+      provenance: [{ sourceIdentity: identity }],
+    };
+
+    expect(compileCandidateSemanticContract({ ...validIR, contracts: [contract, contract] })).toEqual({ ok: false, reason: "Semantic Contract source is ambiguous", stage: "compilation" });
   });
 });
