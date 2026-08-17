@@ -1,4 +1,5 @@
 packages:
   - core
+  - core/sdk
 allowBuilds:
   esbuild: true

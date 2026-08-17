@@ -447,6 +447,56 @@ Stop conditions
 - Any runtime interpretation path that assumes authority, provenance, or failure semantics not explicitly authorized.
 - Any attempt to authorize Host execution within this plan without a separate approved decision.
 
+### Phase 9: SDK Contract Realization
+
+Objective
+
+Realize typed SDK Contracts that carry applicable Runtime operations and results across the Host boundary, preserving contract identity, version, scope, provenance, authority, and failure attribution, without becoming an alternate semantic source.
+
+Inputs and prerequisites
+
+- Phase 8B-1 output: the approved Runtime Contract schema.
+- Phase 8B-2 output: realized Runtime operation and directive behavior under approved semantic rules.
+- [doctrine/core/architecture/HOST-IMPLEMENTATION-ARCHITECTURE.md](../../../doctrine/core/architecture/HOST-IMPLEMENTATION-ARCHITECTURE.md), SDK Boundary and SDK as Compatibility Boundary sections.
+- The `core/sdk` realization boundary and its governing instructions.
+
+Approved schema boundary
+
+- SDK Contracts SHALL be defined only for the Runtime operations and results already realized and applicable: `evaluate`, `produceDirective`, and `recordEvidence`.
+- SDK Contracts SHALL preserve contract identity, semantic and contract version, applicable scope, provenance, authority basis, and failure-kind attribution carried by the underlying Runtime Contract and results.
+- The SDK SHALL provide transport and serialization boundaries only; it SHALL NOT add semantic interpretation, directive derivation, or evaluation behavior beyond what Runtime already realized.
+- SDK consumers SHALL NOT be able to obtain a Runtime result without passing through applicable-context admission (`resolveApplicableSemanticContext`); the SDK SHALL NOT expose a path that bypasses admission.
+- The SDK SHALL remain deterministic and side-effect free: no Host execution, no repository mutation or writes, no filesystem discovery, no persistence, and no model selection.
+- `execute`, mutation, filesystem actions, model selection, repository writes, Host execution, and any Runtime operation not already realized under Phase 8B-2 are excluded from this phase.
+
+Scope and concrete work items
+
+- Define typed SDK contract shapes for the applicable Runtime operations and results only.
+- Preserve identity, version, scope, provenance, authority, and failure attribution through serialization/deserialization without loss or reinterpretation.
+- Implement transport/serialization boundaries (e.g., encode/decode) without embedding new semantic rules.
+- Ensure the SDK entry surface requires an admitted Applicable Semantic Context and rejects any attempt to construct or consume an SDK contract outside that admission path.
+- Keep SDK realization narrow: no new Runtime operations, no new semantic meaning, and no independent SDK semantic authority.
+
+Validation and evidence
+
+- Evidence artifact: SDK contract surface in `core/sdk` covering the applicable Runtime operations and results only.
+- Evidence artifact: tests proving identity, version, scope, provenance, authority, and failure attribution survive transport/serialization unchanged.
+- Evidence artifact: tests proving SDK consumers cannot obtain a result without applicable-context admission.
+- Evidence artifact: tests proving the SDK performs no Host execution, mutation, filesystem discovery, persistence, or model selection.
+
+Exit criteria
+
+- Typed SDK Contracts exist for the applicable Runtime operations and results only.
+- Contract identity, version, scope, provenance, authority, and failure attribution are preserved end to end.
+- The SDK is a deterministic, side-effect-free transport/serialization boundary that cannot be bypassed for applicable-context admission.
+
+Stop conditions
+
+- Any SDK surface that introduces new semantic meaning or a new Runtime operation.
+- Any SDK path that allows a consumer to bypass applicable-context admission.
+- Any SDK behavior that performs Host execution, repository mutation/writes, filesystem discovery, persistence, or model selection.
+- Any SDK realization proceeding without the authority decision on RuntimeOperation exposure below.
+
 ## 6. Certification Matrix
 
 | Requirement                                                                                                                                       | Authoritative source                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                  | Implementation/test surfaces to change                                                                         | Deterministic validation                                                                                        |
@@ -461,6 +511,7 @@ Stop conditions
 | Runtime applicability boundary must consume only the selected Applicable Semantic Context and fail closed on invalid applicability inputs         | [doctrine/core/architecture/CONCEPTUAL-ARCHITECTURE.md](../../../doctrine/core/architecture/CONCEPTUAL-ARCHITECTURE.md), [doctrine/core/architecture/ARCHITECTURAL-INVARIANTS.md](../../../doctrine/core/architecture/ARCHITECTURAL-INVARIANTS.md)                                                                                                                                                                                                                                                                                                                                                                                    | Runtime applicability selection and typed runtime entry surfaces downstream of applicability selection         | Tests proving runtime refuses missing, ambiguous, non-applicable, or invalid contract/context inputs            |
 | Runtime Contract schema realization must preserve the approved field-level shapes, typed unions, fail-closed result types, and attribution fields | [docs/implementation/plans/runtime-contract-schema-proposal.md](runtime-contract-schema-proposal.md)                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                  | Runtime contract schema surface and structural validation tests                                                | Tests proving the approved schema is realized structurally and fails closed for invalid structural inputs       |
 | Runtime semantic evaluation must remain gated by approved semantic rules before operation behavior is realized                                    | [doctrine/core/architecture/CONCEPTUAL-ARCHITECTURE.md](../../../doctrine/core/architecture/CONCEPTUAL-ARCHITECTURE.md), [doctrine/core/architecture/ARCHITECTURAL-INVARIANTS.md](../../../doctrine/core/architecture/ARCHITECTURAL-INVARIANTS.md), [docs/implementation/plans/runtime-contract-schema-proposal.md](runtime-contract-schema-proposal.md)                                                                                                                                                                                                                                                                              | Runtime interpretation surfaces and any approved semantic rules surface                                        | Tests proving runtime interpretation does not proceed without approved semantic rules or exceed their authority |
+| SDK Contract realization must preserve contract identity, version, scope, provenance, authority, and failure attribution and must not allow bypass of applicable-context admission               | [doctrine/core/architecture/HOST-IMPLEMENTATION-ARCHITECTURE.md](../../../doctrine/core/architecture/HOST-IMPLEMENTATION-ARCHITECTURE.md)                                                                                                                                                                                                                                                                                                                                                                                                                                                                                             | SDK contract surface in `core/sdk` and its transport/serialization tests                                       | Tests proving attribution fields survive serialization and that no path bypasses applicable-context admission or performs Host execution, mutation, filesystem discovery, persistence, or model selection |
 
 ## 7. Authority Decisions
 
@@ -474,9 +525,10 @@ Stop conditions
 8. **Resolved gate:** The Runtime Contract semantic addendum, approved initial semantic defaults, and approved contract-supplied rules ownership authorize Phase 8B-2 implementation. Any contract-specific rule that conflicts with these defaults requires a separate authority decision.
 9. **Resolved boundary rule:** Runtime may interpret and produce directives only from an admitted Applicable Semantic Context plus explicitly supplied execution context and authority/provenance inputs; missing, ambiguous, invalid, incompatible, or unauthorized inputs fail closed.
 10. **Approved initial Runtime vocabulary:** operations are limited to `evaluate`, `produceDirective`, and `recordEvidence`; directives are limited to `diagnostic`, `authorityRequired`, and `operationRequested`. `execute`, mutation, filesystem actions, model selection, repository writes, and Host execution remain deferred or excluded until separately authorized.
+11. **Resolved:** SDK adapters may expose the approved `RuntimeOperation`, result, and directive types directly. SDK adds transport, serialization, and applicable-context admission only; it introduces no independent semantic projection or meaning.
 
 ## 8. Planning Status
 
 Status: conditional and authority-bound.
 
-This plan is complete as a planning artifact, but it remains blocked wherever a required semantic authority is missing or contradictory. Phase 7, Phase 8A, Phase 8B-1, and Phase 8B-2 are complete in their reviewed implementation scopes. Canonical lifecycle vocabulary is resolved by Authority Decision 1. Host execution remains outside this plan unless separately authorized.
+This plan is complete as a planning artifact, but it remains blocked wherever a required semantic authority is missing or contradictory. Phase 7, Phase 8A, Phase 8B-1, and Phase 8B-2 are complete in their reviewed implementation scopes. Canonical lifecycle vocabulary is resolved by Authority Decision 1. Host execution remains outside this plan unless separately authorized. Phase 9 (SDK Contract Realization) is authorized under Authority Decision 11 and is realized by the pass-through SDK transport boundary in `core/sdk`.
