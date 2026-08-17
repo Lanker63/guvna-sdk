@@ -1,7 +1,8 @@
 ---
-description: "Use when modifying files under core/sdk/. SDK is a realization boundary, not a semantic source."
-applyTo: "core/sdk/**"
+description: 'Use when modifying files under core/sdk/. SDK is a realization boundary, not a semantic source.'
+applyTo: 'core/sdk/**'
 ---
+
 `core/sdk/` realizes accepted Semantic Contracts and SDK Contracts. It is a
 realization boundary, not a semantic source (see
 `doctrine/core/architecture/ARCHITECTURAL-INVARIANTS.md`, Invariants 5-6, and

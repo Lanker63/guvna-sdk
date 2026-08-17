@@ -1,7 +1,8 @@
 ---
-description: "Use when reading, proposing changes to, or discussing anything under doctrine/. Doctrine is human-ratified governed doctrine, not implementation detail."
-applyTo: "doctrine/**"
+description: 'Use when reading, proposing changes to, or discussing anything under doctrine/. Doctrine is human-ratified governed doctrine, not implementation detail.'
+applyTo: 'doctrine/**'
 ---
+
 Files under `doctrine/` are governed doctrine ratified by human authority,
 not implementation detail and not process state.
 

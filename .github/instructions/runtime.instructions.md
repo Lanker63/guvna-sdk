@@ -1,7 +1,8 @@
 ---
-description: "Use when modifying files under core/runtime/. Runtime is a realization boundary, not a semantic source."
-applyTo: "core/runtime/**"
+description: 'Use when modifying files under core/runtime/. Runtime is a realization boundary, not a semantic source.'
+applyTo: 'core/runtime/**'
 ---
+
 `core/runtime/` realizes accepted Semantic Contracts and Runtime Contracts.
 It is a realization boundary, not a semantic source (see
 `doctrine/core/architecture/ARCHITECTURAL-INVARIANTS.md`, Invariants 5-6).
