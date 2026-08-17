@@ -306,65 +306,177 @@ Stop conditions
 - Any downstream consumer that treats a candidate, draft, or merely generated contract as applicable.
 - Any path that bypasses ratification.
 
-### Phase 8: Runtime Realization
+### Phase 8A: Runtime Applicability Boundary
 
 Objective
 
-Realize Runtime interpretation and execution as a downstream boundary that consumes the Applicable Semantic Context selected by the governing contract process.
+Strengthen the runtime-facing applicability boundary so downstream runtime entry points accept only the selected Applicable Semantic Context and fail closed for absent, ambiguous, invalid, or non-applicable inputs.
 
 Inputs and prerequisites
 
 - Phase 7 output: Applicable Semantic Contract and the Applicable Semantic Context selected from it.
-- The runtime-facing selection boundary that is already approved and fail-closed.
+- The existing runtime-facing selection boundary in [core/src/runtime/applicable-semantic-context.ts](../../../core/src/runtime/applicable-semantic-context.ts).
 - The ratified contract, applicability state, and governing scope.
 
 Scope and concrete work items
 
-- Consume only the applicable contract/context selected by the governing contract process.
-- Interpret and execute behavior only from the applicable runtime-facing context.
+- Preserve and strengthen `selectApplicableSemanticContext` as the fail-closed applicability selector.
+- Add a typed runtime entry point that accepts only the selected Applicable Semantic Context.
+- Make the combined `resolveApplicableSemanticContext` path the mandatory entry boundary for future Runtime interpretation: selection is followed by admission before any downstream consumer receives context.
+- Keep `selectApplicableSemanticContext` exported for resolution and testability; future Runtime interpretation SHALL consume only `resolveApplicableSemanticContext` results.
+- Ensure the runtime entry point rejects absent, ambiguous, invalid, non-applicable, or otherwise unavailable applicability inputs.
 - Preserve the distinction between applicability selection and runtime interpretation.
-- Fail closed on missing, ambiguous, non-applicable, invalid, or otherwise unavailable applicable contract/context inputs.
-- Keep runtime realization narrow: no new semantic source, no contract ratification, and no bypass of the governing selection boundary.
+- Keep runtime applicability narrow: no new semantic source, no contract ratification, and no bypass of the governing selection boundary.
 
 Validation and evidence
 
-- Evidence artifact: runtime-facing execution path that accepts only the selected Applicable Semantic Context.
-- Evidence artifact: tests proving runtime fails closed for missing, ambiguous, non-applicable, or invalid contract/context inputs.
-- Evidence artifact: tests proving runtime does not interpret candidate, draft, validated-only, or otherwise non-applicable contract states.
+- Evidence artifact: runtime-facing selection and entry surfaces that accept only the selected Applicable Semantic Context.
+- Evidence artifact: tests proving selection and entry fail closed for missing, ambiguous, non-applicable, or invalid inputs.
+- Evidence artifact: tests proving candidate, draft, validated-only, or otherwise non-applicable contract states do not reach the runtime entry point.
 
 Exit criteria
 
-- Runtime interpretation and execution are realized as a separate downstream boundary.
-- Runtime consumes only the Applicable Semantic Context selected by the governing contract process.
-- The runtime boundary fails closed for invalid or unavailable applicability inputs.
+- The runtime applicability boundary is explicit, typed, and fail-closed.
+- Runtime accepts only the selected Applicable Semantic Context.
+- Applicability selection remains distinct from runtime interpretation.
 
 Stop conditions
 
 - Any runtime path that infers meaning from a non-applicable contract state.
 - Any runtime path that bypasses applicability selection or weakens fail-closed behavior.
-- Any attempt to collapse runtime interpretation into contract selection.
+- Any attempt to collapse runtime applicability selection into interpretation or execution.
+
+### Phase 8B-1: Runtime Contract Schema Realization
+
+Objective
+
+Realize the approved field-level Runtime Contract schema as a structural contract surface, with typed unions, fail-closed result types, and attribution fields, without semantic interpretation or directive derivation beyond structural validation.
+
+Inputs and prerequisites
+
+- Phase 8A output: explicit, typed runtime applicability boundary.
+- An approved Runtime Contract that defines operations, directives, execution context, authority, provenance, and failure semantics.
+- The Applicable Semantic Context selected by the governing contract process.
+
+Approved schema boundary
+
+- Runtime Contract schema realization is limited to structural validation of the approved field-level shapes.
+- The Runtime Contract SHALL use a typed discriminated operation union for `evaluate`, `produceDirective`, and `recordEvidence`.
+- Runtime results SHALL use a fail-closed union with success values and failure kinds for missing, ambiguous, invalid, incompatible, and unauthorized inputs.
+- Runtime directives SHALL use a typed discriminated union for `diagnostic`, `authorityRequired`, and `operationRequested`, with deterministic identity and source contract, scope, execution-context, authority, and provenance attribution.
+- Mutation, filesystem actions, model selection, repository writes, Host execution, semantic interpretation, and directive derivation beyond structural validation are excluded from this phase.
+
+Scope and concrete work items
+
+- Implement the approved field-level Runtime Contract schema.
+- Preserve the typed operation union, fail-closed result types, and attribution fields.
+- Validate structure only; do not interpret meaning, derive directives, or infer behavior beyond the approved schema.
+- Keep schema realization narrow: no new semantic source and no contract ratification authority.
+
+Validation and evidence
+
+- Evidence artifact: runtime contract schema surface or tests matching the approved field-level shapes.
+- Evidence artifact: tests proving the schema validates structure and fails closed for missing, ambiguous, invalid, incompatible, or unauthorized structural inputs.
+- Evidence artifact: tests proving semantic interpretation, directive derivation, and Host execution are not realized in this phase.
+
+Exit criteria
+
+- The approved Runtime Contract schema is realized as a structural surface.
+- Typed unions, fail-closed result types, and attribution fields are present and validated structurally.
+- Semantic interpretation and directive derivation remain out of scope for this phase.
+
+Stop conditions
+
+- Any schema realization that invents new meaning.
+- Any schema realization that performs semantic interpretation, directive derivation, or Host execution.
+- Any schema realization that extends authority beyond the approved field-level shapes.
+
+### Phase 8B-2: Runtime Semantic Evaluation
+
+Objective
+
+Realize runtime operation behavior for `evaluate`, `produceDirective`, and `recordEvidence` only after the semantic rules for evaluation, directive derivation, and evidence recording are approved.
+
+Inputs and prerequisites
+
+- Phase 8A output: explicit, typed runtime applicability boundary.
+- Phase 8B-1 output: approved Runtime Contract schema realization.
+- The approved Runtime Contract semantic addendum in [runtime-contract-semantic-addendum.md](runtime-contract-semantic-addendum.md), plus contract-specific definitions for evaluation predicates, accepted evaluation results, authority-reference resolution, deterministic identity derivation, provenance completeness, evidence persistence, contradictory authority, and operation requests from indeterminate outcomes.
+- The Applicable Semantic Context selected by the governing contract process.
+
+Approved semantic boundary
+
+- Runtime may interpret and produce directives only from an admitted Applicable Semantic Context plus explicitly supplied execution context and authority/provenance inputs.
+- Missing, ambiguous, invalid, incompatible, or unauthorized inputs SHALL fail closed.
+- The initial Runtime operation vocabulary is limited to `evaluate`, `produceDirective`, and `recordEvidence`.
+- `execute` remains deferred until Host and execution semantics are separately authorized.
+- The initial directive vocabulary is limited to `diagnostic`, `authorityRequired`, and `operationRequested`.
+- Directives SHALL remain attributable to the source contract identity and version, applicable scope, provenance, authority basis, and execution-context reference.
+- Mutation, filesystem actions, model selection, repository writes, and Host execution are excluded from the initial Runtime Contract.
+
+Scope and concrete work items
+
+- Implement runtime behavior for `evaluate`, `produceDirective`, and `recordEvidence` only after the semantic rules are approved.
+- Use the approved semantic rules to define runtime operations, directive derivation, and evidence recording.
+- Preserve the distinction between runtime interpretation and applicability selection.
+- Keep runtime interpretation narrow: no new semantic source and no contract ratification authority.
+- Do not add Host execution unless and until a separate authority decision explicitly authorizes it.
+
+Validation and evidence
+
+- Evidence artifact: [runtime-semantics.ts](../../../core/src/runtime/runtime-semantics.ts) and tests gated by the approved semantic rules.
+- Evidence artifact: tests proving runtime interpretation does not proceed without the approved semantic rules.
+- Evidence artifact: tests proving runtime interpretation does not expand authority beyond the approved semantic rules.
+
+Exit criteria
+
+- Runtime interpretation is realized only under approved semantic rules.
+- Runtime interpretation remains downstream of applicability selection and distinct from it.
+- Runtime interpretation does not overstate authority or introduce Host execution by default.
+
+Implementation status
+
+- Phase 8B-2 is realized through `runRuntimeOperation`.
+- Contract-specific evaluation and directive rules remain injected through `RuntimeSemanticRules`; Runtime does not invent those predicates.
+- Evidence is returned only and is not persisted by Runtime.
+- Phase 8B-2 is complete within the approved contract-supplied rules boundary.
+
+Stop conditions
+
+- Any runtime interpretation path without approved semantic rules.
+- Any runtime interpretation path that assumes authority, provenance, or failure semantics not explicitly authorized.
+- Any attempt to authorize Host execution within this plan without a separate approved decision.
 
 ## 6. Certification Matrix
 
-| Requirement | Authoritative source | Implementation/test surfaces to change | Deterministic validation |
-|---|---|---|---|
-| Canonical Models must be explicit, attributable semantic source concepts | [doctrine/core/constitution/VISION.md](../../../doctrine/core/constitution/VISION.md), [doctrine/core/constitution/EPISTEMIC-INVARIANTS.md](../../../doctrine/core/constitution/EPISTEMIC-INVARIANTS.md), [doctrine/core/canonical/REPOSITORY-INTELLIGENCE-MODEL.md](../../../doctrine/core/canonical/REPOSITORY-INTELLIGENCE-MODEL.md), [doctrine/core/canonical/REPOSITORY-UNDERSTANDING-MODEL.md](../../../doctrine/core/canonical/REPOSITORY-UNDERSTANDING-MODEL.md), [doctrine/core/canonical/SEMANTIC-IDENTITY-AND-FILESYSTEM-REALIZATION.md](../../../doctrine/core/canonical/SEMANTIC-IDENTITY-AND-FILESYSTEM-REALIZATION.md) | Canonical model surface and the existing compiler substrate in [core/src/compiler](../../../core/src/compiler) | Tests proving explicit attribution and fail-closed behavior for insufficient source |
-| Architectural Doctrine must preserve dependency direction, ownership, and realization boundaries | [doctrine/core/architecture/CONCEPTUAL-ARCHITECTURE.md](../../../doctrine/core/architecture/CONCEPTUAL-ARCHITECTURE.md), [doctrine/core/architecture/ARCHITECTURAL-INVARIANTS.md](../../../doctrine/core/architecture/ARCHITECTURAL-INVARIANTS.md) | Architectural model surface and tests that guard dependency direction | Tests proving source precedes realization and realizations do not become semantic source |
-| Semantic Contracts must formally express accepted Guvna meaning without inventing new meaning | [doctrine/core/architecture/CONCEPTUAL-ARCHITECTURE.md](../../../doctrine/core/architecture/CONCEPTUAL-ARCHITECTURE.md), [doctrine/core/architecture/ARCHITECTURAL-INVARIANTS.md](../../../doctrine/core/architecture/ARCHITECTURAL-INVARIANTS.md) | Semantic contract surface in [core/src/compiler](../../../core/src/compiler) | Tests proving no new meaning is introduced by contract realization |
-| Semantic Compilation must produce candidate contracts that are structurally and semantically conformant to governing source | [doctrine/core/architecture/ARCHITECTURAL-INVARIANTS.md](../../../doctrine/core/architecture/ARCHITECTURAL-INVARIANTS.md) | Semantic compilation and serialization surfaces in [core/src/compiler](../../../core/src/compiler) | Deterministic candidate generation checks and structural/semantic conformance tests |
-| Semantic Validation must determine conformance and fail closed when the source is insufficient | [doctrine/core/architecture/ARCHITECTURAL-INVARIANTS.md](../../../doctrine/core/architecture/ARCHITECTURAL-INVARIANTS.md), [doctrine/core/constitution/EPISTEMIC-INVARIANTS.md](../../../doctrine/core/constitution/EPISTEMIC-INVARIANTS.md) | Validation and applicability evaluation surfaces in [core/src/compiler](../../../core/src/compiler) | Negative tests for missing, ambiguous, or contradictory authority |
-| Contract Ratification must be attributable, versioned, and distinct from validation | [doctrine/core/architecture/ARCHITECTURAL-INVARIANTS.md](../../../doctrine/core/architecture/ARCHITECTURAL-INVARIANTS.md), [doctrine/core/architecture/REPOSITORY-ADOPTION-INFORMATION-CONTRACT.md](../../../doctrine/core/architecture/REPOSITORY-ADOPTION-INFORMATION-CONTRACT.md) | Ratification and lifecycle surfaces in [core/src/compiler](../../../core/src/compiler) | Tests proving ratification is separate from compilation and validation |
-| Applicable Semantic Contract must be downstream of ratification and govern Runtime interpretation | [doctrine/core/architecture/CONCEPTUAL-ARCHITECTURE.md](../../../doctrine/core/architecture/CONCEPTUAL-ARCHITECTURE.md), [doctrine/core/architecture/ARCHITECTURAL-INVARIANTS.md](../../../doctrine/core/architecture/ARCHITECTURAL-INVARIANTS.md) | Applicability resolution surfaces and downstream runtime-facing boundaries | Tests proving only the applicable state governs interpretation |
-| Runtime must consume only the Applicable Semantic Context and fail closed on invalid applicability inputs | [doctrine/core/architecture/CONCEPTUAL-ARCHITECTURE.md](../../../doctrine/core/architecture/CONCEPTUAL-ARCHITECTURE.md), [doctrine/core/architecture/ARCHITECTURAL-INVARIANTS.md](../../../doctrine/core/architecture/ARCHITECTURAL-INVARIANTS.md) | Runtime interpretation and execution surfaces downstream of applicability selection | Tests proving runtime refuses missing, ambiguous, non-applicable, or invalid contract/context inputs |
+| Requirement                                                                                                                                       | Authoritative source                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                  | Implementation/test surfaces to change                                                                         | Deterministic validation                                                                                        |
+| ------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------- |
+| Canonical Models must be explicit, attributable semantic source concepts                                                                          | [doctrine/core/constitution/VISION.md](../../../doctrine/core/constitution/VISION.md), [doctrine/core/constitution/EPISTEMIC-INVARIANTS.md](../../../doctrine/core/constitution/EPISTEMIC-INVARIANTS.md), [doctrine/core/canonical/REPOSITORY-INTELLIGENCE-MODEL.md](../../../doctrine/core/canonical/REPOSITORY-INTELLIGENCE-MODEL.md), [doctrine/core/canonical/REPOSITORY-UNDERSTANDING-MODEL.md](../../../doctrine/core/canonical/REPOSITORY-UNDERSTANDING-MODEL.md), [doctrine/core/canonical/SEMANTIC-IDENTITY-AND-FILESYSTEM-REALIZATION.md](../../../doctrine/core/canonical/SEMANTIC-IDENTITY-AND-FILESYSTEM-REALIZATION.md) | Canonical model surface and the existing compiler substrate in [core/src/compiler](../../../core/src/compiler) | Tests proving explicit attribution and fail-closed behavior for insufficient source                             |
+| Architectural Doctrine must preserve dependency direction, ownership, and realization boundaries                                                  | [doctrine/core/architecture/CONCEPTUAL-ARCHITECTURE.md](../../../doctrine/core/architecture/CONCEPTUAL-ARCHITECTURE.md), [doctrine/core/architecture/ARCHITECTURAL-INVARIANTS.md](../../../doctrine/core/architecture/ARCHITECTURAL-INVARIANTS.md)                                                                                                                                                                                                                                                                                                                                                                                    | Architectural model surface and tests that guard dependency direction                                          | Tests proving source precedes realization and realizations do not become semantic source                        |
+| Semantic Contracts must formally express accepted Guvna meaning without inventing new meaning                                                     | [doctrine/core/architecture/CONCEPTUAL-ARCHITECTURE.md](../../../doctrine/core/architecture/CONCEPTUAL-ARCHITECTURE.md), [doctrine/core/architecture/ARCHITECTURAL-INVARIANTS.md](../../../doctrine/core/architecture/ARCHITECTURAL-INVARIANTS.md)                                                                                                                                                                                                                                                                                                                                                                                    | Semantic contract surface in [core/src/compiler](../../../core/src/compiler)                                   | Tests proving no new meaning is introduced by contract realization                                              |
+| Semantic Compilation must produce candidate contracts that are structurally and semantically conformant to governing source                       | [doctrine/core/architecture/ARCHITECTURAL-INVARIANTS.md](../../../doctrine/core/architecture/ARCHITECTURAL-INVARIANTS.md)                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                             | Semantic compilation and serialization surfaces in [core/src/compiler](../../../core/src/compiler)             | Deterministic candidate generation checks and structural/semantic conformance tests                             |
+| Semantic Validation must determine conformance and fail closed when the source is insufficient                                                    | [doctrine/core/architecture/ARCHITECTURAL-INVARIANTS.md](../../../doctrine/core/architecture/ARCHITECTURAL-INVARIANTS.md), [doctrine/core/constitution/EPISTEMIC-INVARIANTS.md](../../../doctrine/core/constitution/EPISTEMIC-INVARIANTS.md)                                                                                                                                                                                                                                                                                                                                                                                          | Validation and applicability evaluation surfaces in [core/src/compiler](../../../core/src/compiler)            | Negative tests for missing, ambiguous, or contradictory authority                                               |
+| Contract Ratification must be attributable, versioned, and distinct from validation                                                               | [doctrine/core/architecture/ARCHITECTURAL-INVARIANTS.md](../../../doctrine/core/architecture/ARCHITECTURAL-INVARIANTS.md), [doctrine/core/architecture/REPOSITORY-ADOPTION-INFORMATION-CONTRACT.md](../../../doctrine/core/architecture/REPOSITORY-ADOPTION-INFORMATION-CONTRACT.md)                                                                                                                                                                                                                                                                                                                                                  | Ratification and lifecycle surfaces in [core/src/compiler](../../../core/src/compiler)                         | Tests proving ratification is separate from compilation and validation                                          |
+| Applicable Semantic Contract must be downstream of ratification and govern Runtime interpretation                                                 | [doctrine/core/architecture/CONCEPTUAL-ARCHITECTURE.md](../../../doctrine/core/architecture/CONCEPTUAL-ARCHITECTURE.md), [doctrine/core/architecture/ARCHITECTURAL-INVARIANTS.md](../../../doctrine/core/architecture/ARCHITECTURAL-INVARIANTS.md)                                                                                                                                                                                                                                                                                                                                                                                    | Applicability resolution surfaces and downstream runtime-facing boundaries                                     | Tests proving only the applicable state governs interpretation                                                  |
+| Runtime applicability boundary must consume only the selected Applicable Semantic Context and fail closed on invalid applicability inputs         | [doctrine/core/architecture/CONCEPTUAL-ARCHITECTURE.md](../../../doctrine/core/architecture/CONCEPTUAL-ARCHITECTURE.md), [doctrine/core/architecture/ARCHITECTURAL-INVARIANTS.md](../../../doctrine/core/architecture/ARCHITECTURAL-INVARIANTS.md)                                                                                                                                                                                                                                                                                                                                                                                    | Runtime applicability selection and typed runtime entry surfaces downstream of applicability selection         | Tests proving runtime refuses missing, ambiguous, non-applicable, or invalid contract/context inputs            |
+| Runtime Contract schema realization must preserve the approved field-level shapes, typed unions, fail-closed result types, and attribution fields | [docs/implementation/plans/runtime-contract-schema-proposal.md](runtime-contract-schema-proposal.md)                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                  | Runtime contract schema surface and structural validation tests                                                | Tests proving the approved schema is realized structurally and fails closed for invalid structural inputs       |
+| Runtime semantic evaluation must remain gated by approved semantic rules before operation behavior is realized                                    | [doctrine/core/architecture/CONCEPTUAL-ARCHITECTURE.md](../../../doctrine/core/architecture/CONCEPTUAL-ARCHITECTURE.md), [doctrine/core/architecture/ARCHITECTURAL-INVARIANTS.md](../../../doctrine/core/architecture/ARCHITECTURAL-INVARIANTS.md), [docs/implementation/plans/runtime-contract-schema-proposal.md](runtime-contract-schema-proposal.md)                                                                                                                                                                                                                                                                              | Runtime interpretation surfaces and any approved semantic rules surface                                        | Tests proving runtime interpretation does not proceed without approved semantic rules or exceed their authority |
 
-## 7. Open Authority Decisions
+## 7. Authority Decisions
 
-1. Whether and where canonical lifecycle vocabulary is extended for release or stability if needed.
-2. First release does not require a separate persisted ratification artifact; the serializable ratification record in the Semantic IR/provenance model is the ratification evidence surface.
-3. Whether any other authority gap must be preserved as a conditional or blocked decision to keep doctrine boundaries intact.
+1. **Resolved:** canonical Semantic Contract lifecycle vocabulary is `candidate`, `validated`, `ratified`, `applicable`, `superseded`, `rejected`, and `retired`. Applicability is established only by the ratified-to-applicable transition with attributable authority, exact scope, and effective-boundary guards; lifecycle state does not independently establish Repository Truth or authority.
+2. **Resolved for Phase 8A:** authority references are verified structurally at the Runtime boundary; full authority resolution remains the compiler/ratification responsibility.
+3. **Resolved for Phase 8A:** semantic scope equality is compiler-owned, term-aware, and reused by Runtime; Runtime does not define a competing equality rule.
+4. **Resolved:** the first release does not require a separate persisted ratification artifact; the serializable ratification record in the Semantic IR/provenance model is the ratification evidence surface.
+5. **Resolved:** Runtime interpretation requires a separate approved Runtime Contract schema realization and separate approved semantic rules before operation behavior is realized.
+6. **Resolved:** Host execution remains out of scope for this plan unless separately authorized.
+7. **Approved gate:** Phase 8B-1 may proceed because the approved Runtime Contract schema is recorded in [runtime-contract-schema-proposal.md](runtime-contract-schema-proposal.md), using typed discriminated unions for operations, directives, and fail-closed results with explicit execution-context, authority, provenance, contract, scope, and deterministic identity fields.
+8. **Resolved gate:** The Runtime Contract semantic addendum, approved initial semantic defaults, and approved contract-supplied rules ownership authorize Phase 8B-2 implementation. Any contract-specific rule that conflicts with these defaults requires a separate authority decision.
+9. **Resolved boundary rule:** Runtime may interpret and produce directives only from an admitted Applicable Semantic Context plus explicitly supplied execution context and authority/provenance inputs; missing, ambiguous, invalid, incompatible, or unauthorized inputs fail closed.
+10. **Approved initial Runtime vocabulary:** operations are limited to `evaluate`, `produceDirective`, and `recordEvidence`; directives are limited to `diagnostic`, `authorityRequired`, and `operationRequested`. `execute`, mutation, filesystem actions, model selection, repository writes, and Host execution remain deferred or excluded until separately authorized.
 
 ## 8. Planning Status
 
 Status: conditional and authority-bound.
 
-This plan is complete as a planning artifact, but it remains blocked wherever a required semantic authority is missing or contradictory. Phase 7 is complete in compiler scope; remaining work is represented as the separate Runtime realization phase after applicability selection. The plan intentionally preserves the provided assessment, phase gates, validation evidence, exit criteria, stop conditions, and open authority decisions in meaning while organizing them into a sequential realization plan.
+This plan is complete as a planning artifact, but it remains blocked wherever a required semantic authority is missing or contradictory. Phase 7, Phase 8A, Phase 8B-1, and Phase 8B-2 are complete in their reviewed implementation scopes. Canonical lifecycle vocabulary is resolved by Authority Decision 1. Host execution remains outside this plan unless separately authorized.

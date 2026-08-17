@@ -1,21 +1,11 @@
-export type ApplicabilityResult =
-  | "applicable"
-  | "not-applicable"
-  | "indeterminate";
+export type ApplicabilityResult = 'applicable' | 'not-applicable' | 'indeterminate';
 
-export type AuthorityDecision = "applicable" | "not-applicable";
+export type AuthorityDecision = 'applicable' | 'not-applicable';
 
 export type EvidenceStatus =
-  | "valid"
-  | "invalid"
-  | "ambiguous"
-  | "conflicting"
-  | "stale"
-  | "revoked"
-  | "unsupported";
+  'valid' | 'invalid' | 'ambiguous' | 'conflicting' | 'stale' | 'revoked' | 'unsupported';
 
-const ESTABLISHED_GOVERNED_SCOPE =
-  "Guvna Semantic Contract semantic boundary";
+const ESTABLISHED_GOVERNED_SCOPE = 'Guvna Semantic Contract semantic boundary';
 
 export interface AuthorityInput<Provenance = unknown> {
   authorityIdentity: string;
@@ -37,7 +27,7 @@ export interface Evidence<Provenance = unknown> {
 
 export interface RatificationInput<Provenance = unknown> {
   ratified: boolean;
-  decision: "ratify";
+  decision: 'ratify';
   authorityIdentity: string;
   decisionIdentity: string;
   decisionVersion: string;
@@ -49,12 +39,11 @@ export interface RatificationInput<Provenance = unknown> {
 }
 
 export type EffectiveBoundaryDeclaration =
-  | { kind: "timestamp"; value: string }
-  | { kind: "revision"; value: string }
-  | { kind: "boundary-reference"; identity: string };
+  | { kind: 'timestamp'; value: string }
+  | { kind: 'revision'; value: string }
+  | { kind: 'boundary-reference'; identity: string };
 
-export interface EffectiveBoundary<Provenance = unknown>
-  extends Evidence<Provenance> {
+export interface EffectiveBoundary<Provenance = unknown> extends Evidence<Provenance> {
   declaration?: EffectiveBoundaryDeclaration;
 }
 
@@ -105,70 +94,67 @@ export function determineApplicability<Provenance>(
     inputs.ratification.subjectScope !== inputs.subjectScope ||
     !inputs.validated ||
     !inputs.ratification.ratified ||
-    inputs.validity.status !== "valid" ||
-    inputs.effectiveBoundary.status !== "valid"
+    inputs.validity.status !== 'valid' ||
+    inputs.effectiveBoundary.status !== 'valid'
   ) {
     return indeterminate(provenance);
   }
 
-  if (inputs.authority.decision === "not-applicable") {
+  if (inputs.authority.decision === 'not-applicable') {
     return {
-      result: "not-applicable",
+      result: 'not-applicable',
       provenance,
     };
   }
 
   return {
-    result: "applicable",
+    result: 'applicable',
     provenance,
   };
 }
 
-function hasRequiredInputValues<Provenance>(
-  inputs: ApplicabilityInputs<Provenance>,
-): boolean {
+function hasRequiredInputValues<Provenance>(inputs: ApplicabilityInputs<Provenance>): boolean {
   return (
     inputs.authority !== null &&
-    typeof inputs.authority === "object" &&
-    typeof inputs.authority.authorityIdentity === "string" &&
+    typeof inputs.authority === 'object' &&
+    typeof inputs.authority.authorityIdentity === 'string' &&
     inputs.authority.authorityIdentity.length > 0 &&
-    typeof inputs.authority.decisionIdentity === "string" &&
+    typeof inputs.authority.decisionIdentity === 'string' &&
     inputs.authority.decisionIdentity.length > 0 &&
-    typeof inputs.authority.decisionVersion === "string" &&
+    typeof inputs.authority.decisionVersion === 'string' &&
     inputs.authority.decisionVersion.length > 0 &&
     isNonEmptyString(inputs.authority.subjectContractIdentity) &&
     isNonEmptyString(inputs.authority.subjectContractVersion) &&
-    typeof inputs.authority.attribution === "string" &&
+    typeof inputs.authority.attribution === 'string' &&
     inputs.authority.attribution.length > 0 &&
-    (inputs.authority.decision === "applicable" ||
-      inputs.authority.decision === "not-applicable") &&
-    inputs.authority.status === "valid" &&
+    (inputs.authority.decision === 'applicable' ||
+      inputs.authority.decision === 'not-applicable') &&
+    inputs.authority.status === 'valid' &&
     inputs.authority.provenance !== undefined &&
     isValidOptionalDecisionTimestamp(inputs.authority.decisionTimestamp) &&
-    typeof inputs.governedScope === "string" &&
+    typeof inputs.governedScope === 'string' &&
     inputs.governedScope.length > 0 &&
     isNonEmptyString(inputs.subjectContractIdentity) &&
     isNonEmptyString(inputs.subjectSemanticVersion) &&
-    typeof inputs.subjectScope === "string" &&
+    typeof inputs.subjectScope === 'string' &&
     inputs.subjectScope.length > 0 &&
-    typeof inputs.validated === "boolean" &&
+    typeof inputs.validated === 'boolean' &&
     isValidRatification(inputs.ratification) &&
     inputs.validity !== null &&
-    typeof inputs.validity === "object" &&
+    typeof inputs.validity === 'object' &&
     inputs.validity.provenance !== undefined &&
     inputs.effectiveBoundary !== null &&
-    typeof inputs.effectiveBoundary === "object" &&
+    typeof inputs.effectiveBoundary === 'object' &&
     inputs.effectiveBoundary.provenance !== undefined &&
-    isValidOptionalEffectiveBoundaryDeclaration(
-      inputs.effectiveBoundary.declaration,
-    )
+    isValidOptionalEffectiveBoundaryDeclaration(inputs.effectiveBoundary.declaration)
   );
 }
 
 function isValidRatification<Provenance>(value: unknown): value is RatificationInput<Provenance> {
   if (!isRecord(value)) return false;
-  return value.ratified === true &&
-    value.decision === "ratify" &&
+  return (
+    value.ratified === true &&
+    value.decision === 'ratify' &&
     isNonEmptyString(value.authorityIdentity) &&
     isNonEmptyString(value.decisionIdentity) &&
     isNonEmptyString(value.decisionVersion) &&
@@ -176,16 +162,15 @@ function isValidRatification<Provenance>(value: unknown): value is RatificationI
     isNonEmptyString(value.contractVersion) &&
     isNonEmptyString(value.subjectScope) &&
     isNonEmptyString(value.governedScope) &&
-    value.provenance !== undefined;
+    value.provenance !== undefined
+  );
 }
 
 function isValidOptionalDecisionTimestamp(value: unknown): boolean {
   return value === undefined || isNonEmptyString(value);
 }
 
-function isValidOptionalEffectiveBoundaryDeclaration(
-  value: unknown,
-): boolean {
+function isValidOptionalEffectiveBoundaryDeclaration(value: unknown): boolean {
   if (value === undefined) {
     return true;
   }
@@ -194,41 +179,35 @@ function isValidOptionalEffectiveBoundaryDeclaration(
     return false;
   }
 
-  if (value.kind === "timestamp" || value.kind === "revision") {
-    return hasExactFields(value, ["kind", "value"]) && isNonEmptyString(value.value);
+  if (value.kind === 'timestamp' || value.kind === 'revision') {
+    return hasExactFields(value, ['kind', 'value']) && isNonEmptyString(value.value);
   }
 
   return (
-    value.kind === "boundary-reference" &&
-    hasExactFields(value, ["kind", "identity"]) &&
+    value.kind === 'boundary-reference' &&
+    hasExactFields(value, ['kind', 'identity']) &&
     isNonEmptyString(value.identity)
   );
 }
 
-function hasExactFields(
-  value: Record<string, unknown>,
-  expectedFields: string[],
-): boolean {
+function hasExactFields(value: Record<string, unknown>, expectedFields: string[]): boolean {
   const fields = Object.keys(value);
-  return (
-    fields.length === expectedFields.length &&
-    expectedFields.every((field) => field in value)
-  );
+  return fields.length === expectedFields.length && expectedFields.every((field) => field in value);
 }
 
 function isRecord(value: unknown): value is Record<string, unknown> {
-  return typeof value === "object" && value !== null && !Array.isArray(value);
+  return typeof value === 'object' && value !== null && !Array.isArray(value);
 }
 
 function isNonEmptyString(value: unknown): value is string {
-  return typeof value === "string" && value.length > 0;
+  return typeof value === 'string' && value.length > 0;
 }
 
 function indeterminate<Provenance>(
   provenance: DeterminationProvenance<Provenance> | undefined,
 ): ApplicabilityDetermination<Provenance> {
   return {
-    result: "indeterminate",
+    result: 'indeterminate',
     provenance,
   };
 }

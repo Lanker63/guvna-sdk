@@ -1,20 +1,24 @@
-import { validateSemanticIR, type SemanticIR, type SemanticIRValidationResult } from "./semantic-ir.js";
+import {
+  validateSemanticIR,
+  type SemanticIR,
+  type SemanticIRValidationResult,
+} from './semantic-ir.js';
 
 export interface BoundedArchitecturalView {
-  readonly semanticIdentity: SemanticIR["semanticIdentity"];
-  readonly semanticVersion: SemanticIR["semanticVersion"];
-  readonly semanticScope: SemanticIR["semanticScope"];
-  readonly meaning: SemanticIR["meaning"];
-  readonly concepts: SemanticIR["concepts"];
-  readonly relationships: SemanticIR["relationships"];
-  readonly constraints: SemanticIR["constraints"];
-  readonly transitions: SemanticIR["transitions"];
-  readonly derivations: SemanticIR["derivations"];
-  readonly contracts: SemanticIR["contracts"];
-  readonly realizations: SemanticIR["realizations"];
-  readonly authorityContext: SemanticIR["authorityContext"];
-  readonly provenance: SemanticIR["provenance"];
-  readonly compatibility: SemanticIR["compatibility"];
+  readonly semanticIdentity: SemanticIR['semanticIdentity'];
+  readonly semanticVersion: SemanticIR['semanticVersion'];
+  readonly semanticScope: SemanticIR['semanticScope'];
+  readonly meaning: SemanticIR['meaning'];
+  readonly concepts: SemanticIR['concepts'];
+  readonly relationships: SemanticIR['relationships'];
+  readonly constraints: SemanticIR['constraints'];
+  readonly transitions: SemanticIR['transitions'];
+  readonly derivations: SemanticIR['derivations'];
+  readonly contracts: SemanticIR['contracts'];
+  readonly realizations: SemanticIR['realizations'];
+  readonly authorityContext: SemanticIR['authorityContext'];
+  readonly provenance: SemanticIR['provenance'];
+  readonly compatibility: SemanticIR['compatibility'];
 }
 
 export type ArchitecturalViewResult =
@@ -42,10 +46,33 @@ function collectArchitecturalIdentities(view: BoundedArchitecturalView): Set<str
     ...view.provenance.records.map((record) => record.identity.value),
     ...view.provenance.conflicts.map((conflict) => conflict.identity.value),
     ...view.compatibility.map((requirement) => requirement.identity.value),
-    ...view.contracts.flatMap((contract) => [contract.version.semanticIdentity.identity.value, contract.version.scope.identity.value, contract.applicability.scope.identity.value, ...(contract.applicability.authorityDecision ? [contract.applicability.authorityDecision.identity.value] : []), ...(contract.ratification.authorityDecision ? [contract.ratification.authorityDecision.identity.value] : [])]),
-    ...view.authorityContext.authorityDecisions.flatMap((decision) => [decision.authorityIdentity.identity.value, decision.authorityIdentity.principal.identity.value, decision.subjectContractIdentity.value, decision.scope.identity.value]),
+    ...view.contracts.flatMap((contract) => [
+      contract.version.semanticIdentity.identity.value,
+      contract.version.scope.identity.value,
+      contract.applicability.scope.identity.value,
+      ...(contract.applicability.authorityDecision
+        ? [contract.applicability.authorityDecision.identity.value]
+        : []),
+      ...(contract.ratification.authorityDecision
+        ? [contract.ratification.authorityDecision.identity.value]
+        : []),
+    ]),
+    ...view.authorityContext.authorityDecisions.flatMap((decision) => [
+      decision.authorityIdentity.identity.value,
+      decision.authorityIdentity.principal.identity.value,
+      decision.subjectContractIdentity.value,
+      decision.scope.identity.value,
+    ]),
     ...view.authorityContext.acceptances.flatMap((acceptance) => [acceptance.scope.identity.value]),
-    ...view.authorityContext.delegations.flatMap((delegation) => [delegation.delegator.identity.value, delegation.delegator.principal.identity.value, delegation.delegate.identity.value, delegation.delegate.principal.identity.value, delegation.delegatedAuthorityIdentity.identity.value, delegation.delegatedAuthorityIdentity.principal.identity.value, delegation.scope.identity.value]),
+    ...view.authorityContext.delegations.flatMap((delegation) => [
+      delegation.delegator.identity.value,
+      delegation.delegator.principal.identity.value,
+      delegation.delegate.identity.value,
+      delegation.delegate.principal.identity.value,
+      delegation.delegatedAuthorityIdentity.identity.value,
+      delegation.delegatedAuthorityIdentity.principal.identity.value,
+      delegation.scope.identity.value,
+    ]),
   ]);
 }
 
@@ -64,7 +91,14 @@ function collectProvenanceSources(view: BoundedArchitecturalView): string[] {
     ...view.authorityContext.uncertainty.flatMap((uncertainty) => uncertainty.provenance),
     ...view.authorityContext.contradictions.flatMap((contradiction) => contradiction.provenance),
     ...view.authorityContext.delegations.flatMap((delegation) => delegation.provenance),
-    ...view.provenance.records.flatMap((record) => [...record.sources, ...record.transformations.flatMap((transformation) => transformation.inputs.concat(transformation.outputs).map((reference) => ({ sourceIdentity: reference.identity })))]),
+    ...view.provenance.records.flatMap((record) => [
+      ...record.sources,
+      ...record.transformations.flatMap((transformation) =>
+        transformation.inputs
+          .concat(transformation.outputs)
+          .map((reference) => ({ sourceIdentity: reference.identity })),
+      ),
+    ]),
     ...view.provenance.conflicts.flatMap((conflict) => conflict.sources),
   ].map((provenance) => provenance.sourceIdentity.value);
 }
@@ -98,32 +132,90 @@ export function createBoundedArchitecturalView(ir: unknown): ArchitecturalViewRe
   };
 }
 
-export function validateBoundedArchitecturalView(view: BoundedArchitecturalView): ArchitecturalViewValidationResult {
+export function validateBoundedArchitecturalView(
+  view: BoundedArchitecturalView,
+): ArchitecturalViewValidationResult {
   const identities = collectArchitecturalIdentities(view);
-  if (collectProvenanceSources(view).some((sourceIdentity) => !identities.has(sourceIdentity))) return { ok: false, reason: "Architectural view provenance references an unknown IR identity" };
+  if (collectProvenanceSources(view).some((sourceIdentity) => !identities.has(sourceIdentity)))
+    return { ok: false, reason: 'Architectural view provenance references an unknown IR identity' };
   const references = [
-    ...view.relationships.flatMap((relationship) => [relationship.subject, relationship.predicate, relationship.object, ...relationship.constraints]),
+    ...view.relationships.flatMap((relationship) => [
+      relationship.subject,
+      relationship.predicate,
+      relationship.object,
+      ...relationship.constraints,
+    ]),
     ...view.constraints.map((constraint) => constraint.subject),
-    ...view.transitions.flatMap((transition) => [transition.from, transition.operation, transition.to, transition.authorityReference]),
+    ...view.transitions.flatMap((transition) => [
+      transition.from,
+      transition.operation,
+      transition.to,
+      transition.authorityReference,
+    ]),
     ...view.realizations.flatMap((realization) => realization.compatibility.requirements),
-    ...view.compatibility.flatMap((requirement) => [requirement.subject, ...(requirement.consumer ? [requirement.consumer] : []), ...(requirement.contract ? [requirement.contract] : []), ...(requirement.dependency ? [requirement.dependency] : [])]),
-    ...view.authorityContext.authorityDecisions.flatMap((decision) => [decision.authorityIdentity.identity, decision.authorityIdentity.principal, decision.subject, decision.scope.identity, decision.subjectContractIdentity]),
-    ...view.authorityContext.acceptances.flatMap((acceptance) => [acceptance.subject, acceptance.scope.identity, acceptance.authorityDecision]),
+    ...view.compatibility.flatMap((requirement) => [
+      requirement.subject,
+      ...(requirement.consumer ? [requirement.consumer] : []),
+      ...(requirement.contract ? [requirement.contract] : []),
+      ...(requirement.dependency ? [requirement.dependency] : []),
+    ]),
+    ...view.authorityContext.authorityDecisions.flatMap((decision) => [
+      decision.authorityIdentity.identity,
+      decision.authorityIdentity.principal,
+      decision.subject,
+      decision.scope.identity,
+      decision.subjectContractIdentity,
+    ]),
+    ...view.authorityContext.acceptances.flatMap((acceptance) => [
+      acceptance.subject,
+      acceptance.scope.identity,
+      acceptance.authorityDecision,
+    ]),
     ...view.authorityContext.uncertainty.map((uncertainty) => uncertainty.subject),
-    ...view.authorityContext.contradictions.flatMap((contradiction) => [...contradiction.claims, contradiction.scope.identity]),
-    ...view.authorityContext.delegations.flatMap((delegation) => [delegation.delegator.identity, delegation.delegator.principal, delegation.delegate.identity, delegation.delegate.principal, delegation.delegatedAuthorityIdentity.identity, delegation.delegatedAuthorityIdentity.principal, delegation.scope.identity, delegation.governingAuthority]),
-    ...view.provenance.records.flatMap((record) => [record.subject, ...(record.authorityDecision ? [record.authorityDecision] : [])]),
-    ...view.provenance.conflicts.flatMap((conflict) => [...conflict.sources.map((source) => source.sourceIdentity), ...(conflict.resolution ? [conflict.resolution] : [])]),
+    ...view.authorityContext.contradictions.flatMap((contradiction) => [
+      ...contradiction.claims,
+      contradiction.scope.identity,
+    ]),
+    ...view.authorityContext.delegations.flatMap((delegation) => [
+      delegation.delegator.identity,
+      delegation.delegator.principal,
+      delegation.delegate.identity,
+      delegation.delegate.principal,
+      delegation.delegatedAuthorityIdentity.identity,
+      delegation.delegatedAuthorityIdentity.principal,
+      delegation.scope.identity,
+      delegation.governingAuthority,
+    ]),
+    ...view.provenance.records.flatMap((record) => [
+      record.subject,
+      ...(record.authorityDecision ? [record.authorityDecision] : []),
+    ]),
+    ...view.provenance.conflicts.flatMap((conflict) => [
+      ...conflict.sources.map((source) => source.sourceIdentity),
+      ...(conflict.resolution ? [conflict.resolution] : []),
+    ]),
   ];
-  if (references.some((reference) => !identities.has("identity" in reference ? reference.identity.value : reference.value))) return { ok: false, reason: "Architectural view references an unknown IR identity" };
+  if (
+    references.some(
+      (reference) =>
+        !identities.has('identity' in reference ? reference.identity.value : reference.value),
+    )
+  )
+    return { ok: false, reason: 'Architectural view references an unknown IR identity' };
   for (const derivation of view.derivations) {
-    if (!identities.has(derivation.result.identity.value) || derivation.sources.some((source) => !identities.has(source.identity.value))) {
-      return { ok: false, reason: "Architectural derivation references an unknown IR identity" };
+    if (
+      !identities.has(derivation.result.identity.value) ||
+      derivation.sources.some((source) => !identities.has(source.identity.value))
+    ) {
+      return { ok: false, reason: 'Architectural derivation references an unknown IR identity' };
     }
   }
   for (const realization of view.realizations) {
-    if (!identities.has(realization.realizes.identity.value) || realization.conformsTo.some((contract) => !identities.has(contract.identity.value))) {
-      return { ok: false, reason: "Architectural realization references an unknown IR identity" };
+    if (
+      !identities.has(realization.realizes.identity.value) ||
+      realization.conformsTo.some((contract) => !identities.has(contract.identity.value))
+    ) {
+      return { ok: false, reason: 'Architectural realization references an unknown IR identity' };
     }
   }
   return { ok: true };

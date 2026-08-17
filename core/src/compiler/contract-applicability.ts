@@ -4,7 +4,7 @@ import {
   type ApplicabilityResult,
   type DeterminationProvenance,
   type EffectiveBoundary,
-} from "./applicability-determination.js";
+} from './applicability-determination.js';
 
 export interface SuppliedContractApplicabilityInput<Provenance = unknown> {
   subjectContractIdentity: string;
@@ -44,12 +44,8 @@ export function evaluateSuppliedContractApplicability<Provenance>(
   const hasSubjectVersion = isNonEmptyString(input?.subjectSemanticVersion);
 
   return {
-    subjectContractIdentity: hasSubjectIdentity
-      ? input.subjectContractIdentity
-      : undefined,
-    subjectSemanticVersion: hasSubjectVersion
-      ? input.subjectSemanticVersion
-      : undefined,
+    subjectContractIdentity: hasSubjectIdentity ? input.subjectContractIdentity : undefined,
+    subjectSemanticVersion: hasSubjectVersion ? input.subjectSemanticVersion : undefined,
     governedScope: applicability?.governedScope,
     authorityIdentity: authority?.authorityIdentity,
     decisionIdentity: authority?.decisionIdentity,
@@ -57,14 +53,11 @@ export function evaluateSuppliedContractApplicability<Provenance>(
     decisionTimestamp: authority?.decisionTimestamp,
     attribution: authority?.attribution,
     effectiveBoundary: applicability?.effectiveBoundary,
-    result:
-      hasSubjectIdentity && hasSubjectVersion
-        ? determination.result
-        : "indeterminate",
+    result: hasSubjectIdentity && hasSubjectVersion ? determination.result : 'indeterminate',
     provenance: determination.provenance,
   };
 }
 
 function isNonEmptyString(value: unknown): value is string {
-  return typeof value === "string" && value.length > 0;
+  return typeof value === 'string' && value.length > 0;
 }

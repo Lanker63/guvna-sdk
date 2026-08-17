@@ -12,7 +12,7 @@ Runtime, SDK, and conformance artifacts.
 
 The required semantic path is:
 
-``` text
+```text
 Accepted Guvna Doctrine
         ↓
 Doctrine Semantic Model
@@ -35,7 +35,7 @@ Applicable Semantic Contract
 Repository-specific meaning remains separately owned by the Governed
 Repository.
 
-------------------------------------------------------------------------
+---
 
 # 1. Non-Negotiable Rules
 
@@ -55,7 +55,7 @@ Repository.
 9.  **Compilation must be deterministic.**
 10. **Every semantic artifact must preserve provenance.**
 
-------------------------------------------------------------------------
+---
 
 # 2. Authority-Gate Protocol
 
@@ -78,14 +78,14 @@ Approval of one phase never authorizes a later phase.
 
 ### Gate vocabulary
 
--   `REVIEW` --- analysis/proposal only.
--   `APPROVE` --- explicit authorization to perform the presented
-    action.
--   `REVISE` --- revise the proposal and return to the same gate.
--   `REJECT` --- do not perform the proposed action.
--   `BLOCKED` --- required authority or semantic information is absent.
+- `REVIEW` --- analysis/proposal only.
+- `APPROVE` --- explicit authorization to perform the presented
+  action.
+- `REVISE` --- revise the proposal and return to the same gate.
+- `REJECT` --- do not perform the proposed action.
+- `BLOCKED` --- required authority or semantic information is absent.
 
-------------------------------------------------------------------------
+---
 
 # 3. Phase 0 --- Establish Baseline
 
@@ -95,19 +95,19 @@ Establish the exact doctrine and repository baseline.
 
 ## Inspect
 
--   current doctrine set;
--   canonical models;
--   architectural artifacts;
--   TypeScript structure;
--   existing Runtime;
--   existing SDK;
--   existing generators;
--   tests/build configuration;
--   generated artifacts.
+- current doctrine set;
+- canonical models;
+- architectural artifacts;
+- TypeScript structure;
+- existing Runtime;
+- existing SDK;
+- existing generators;
+- tests/build configuration;
+- generated artifacts.
 
 ## Produce
 
-``` text
+```text
 BASELINE REVIEW
 Doctrine sources:
 Canonical sources:
@@ -128,7 +128,7 @@ Potential conflicts:
 
 Human approves the baseline and scope.
 
-------------------------------------------------------------------------
+---
 
 # 4. Phase 1 --- Define the Doctrine Semantic Model
 
@@ -139,7 +139,7 @@ compilation without replacing doctrine.
 
 Minimum concepts:
 
-``` text
+```text
 Concept
 Relationship
 Invariant
@@ -159,7 +159,7 @@ TypeScript is the semantic design language.
 
 Illustrative starting shape:
 
-``` ts
+```ts
 interface DoctrineModel {
   doctrineVersion: SemanticVersion;
   sources: DoctrineSource[];
@@ -180,16 +180,16 @@ complete the interface.
 
 Present:
 
--   complete proposed TypeScript model;
--   doctrine-to-model mapping;
--   unresolved semantic gaps;
--   examples;
--   validation rules;
--   proposed file mutations.
+- complete proposed TypeScript model;
+- doctrine-to-model mapping;
+- unresolved semantic gaps;
+- examples;
+- validation rules;
+- proposed file mutations.
 
 **Stop until approved.**
 
-------------------------------------------------------------------------
+---
 
 # 5. Phase 2 --- Define the Guvna Semantic IR
 
@@ -199,19 +199,19 @@ Define the compiler's canonical intermediate representation.
 
 The IR must be:
 
--   explicit;
--   typed;
--   deterministic;
--   serializable;
--   versioned;
--   provenance-aware;
--   independent of Runtime implementation;
--   independent of SDK implementation;
--   independent of repository-specific truth.
+- explicit;
+- typed;
+- deterministic;
+- serializable;
+- versioned;
+- provenance-aware;
+- independent of Runtime implementation;
+- independent of SDK implementation;
+- independent of repository-specific truth.
 
 Recommended separation:
 
-``` text
+```text
 TypeScript = semantic design language
 JSON       = machine-consumable serialized IR
 Markdown   = human doctrine
@@ -221,19 +221,19 @@ Markdown   = human doctrine
 
 Present:
 
--   TypeScript IR;
--   serialized example;
--   identity/reference rules;
--   canonical ordering;
--   versioning;
--   provenance;
--   determinism strategy;
--   unresolved gaps;
--   proposed mutations.
+- TypeScript IR;
+- serialized example;
+- identity/reference rules;
+- canonical ordering;
+- versioning;
+- provenance;
+- determinism strategy;
+- unresolved gaps;
+- proposed mutations.
 
 **Stop until approved.**
 
-------------------------------------------------------------------------
+---
 
 # 6. Phase 3 --- Build the Doctrine Compiler
 
@@ -243,7 +243,7 @@ Compile accepted doctrine into Semantic IR.
 
 Required stages:
 
-``` text
+```text
 Discover
   ↓
 Parse
@@ -273,12 +273,12 @@ Convert equivalent semantic expressions into canonical forms.
 
 Detect:
 
--   undefined concepts;
--   circular dependencies;
--   conflicting definitions;
--   invalid ownership;
--   invalid authority relationships;
--   unresolved references.
+- undefined concepts;
+- circular dependencies;
+- conflicting definitions;
+- invalid ownership;
+- invalid authority relationships;
+- unresolved references.
 
 ### Compile
 
@@ -292,7 +292,7 @@ Verify structural and semantic consistency.
 
 When doctrine does not establish a required semantic:
 
-``` text
+```text
 SEMANTIC-GAP
 ID:
 Source:
@@ -307,18 +307,18 @@ Compilation fails closed on unresolved semantic gaps.
 
 Before implementation, approve:
 
--   compiler architecture;
--   stage boundaries;
--   Semantic Gap behavior;
--   mutation scope.
+- compiler architecture;
+- stage boundaries;
+- Semantic Gap behavior;
+- mutation scope.
 
 After implementation verify:
 
--   current doctrine compiles;
--   output is deterministic;
--   unresolved semantics fail closed.
+- current doctrine compiles;
+- output is deterministic;
+- unresolved semantics fail closed.
 
-------------------------------------------------------------------------
+---
 
 # 7. Phase 4 --- Compile the Candidate Semantic Contract
 
@@ -327,7 +327,7 @@ After implementation verify:
 Transform accepted doctrine and Semantic IR into a Candidate Semantic
 Contract.
 
-``` text
+```text
 Accepted Doctrine
       ↓
 Semantic IR
@@ -339,19 +339,19 @@ Candidate Semantic Contract
 
 The candidate must include, as applicable:
 
--   semantic identity;
--   version;
--   parent references;
--   concepts;
--   operations;
--   states;
--   transitions;
--   invariants;
--   authority boundaries;
--   provenance requirements;
--   compatibility requirements;
--   failure semantics;
--   realization obligations.
+- semantic identity;
+- version;
+- parent references;
+- concepts;
+- operations;
+- states;
+- transitions;
+- invariants;
+- authority boundaries;
+- provenance requirements;
+- compatibility requirements;
+- failure semantics;
+- realization obligations.
 
 Required analyses:
 
@@ -365,7 +365,7 @@ Required analyses:
 
 Present:
 
-``` text
+```text
 CANDIDATE CONTRACT REVIEW
 
 Identity:
@@ -390,7 +390,7 @@ Generated artifacts:
 
 **No ratification or code generation before approval.**
 
-------------------------------------------------------------------------
+---
 
 # 8. Phase 5 --- Contract Ratification
 
@@ -406,35 +406,35 @@ meaning.
 
 Present:
 
--   exact candidate identity/version;
--   candidate digest;
--   validation report;
--   compatibility report;
--   provenance report;
--   Semantic Delta.
+- exact candidate identity/version;
+- candidate digest;
+- validation report;
+- compatibility report;
+- provenance report;
+- Semantic Delta.
 
 Human must explicitly authorize:
 
-``` text
+```text
 RATIFY CONTRACT <identity>@<version>
 ```
 
 Without this authorization:
 
--   no Applicable Contract;
--   no Runtime generation;
--   no SDK generation;
--   no publication.
+- no Applicable Contract;
+- no Runtime generation;
+- no SDK generation;
+- no publication.
 
 Record the ratification provenance after approval.
 
-------------------------------------------------------------------------
+---
 
 # 9. Phase 6 --- Specialize the Applicable Contract
 
 Produce:
 
-``` text
+```text
 Applicable Semantic Contract
         ├── Runtime Contract
         ├── SDK Contract
@@ -445,15 +445,15 @@ Applicable Semantic Contract
 
 May define:
 
--   operations;
--   states/transitions;
--   directive semantics;
--   execution preconditions;
--   authority requirements;
--   provenance requirements;
--   failure semantics;
--   lifecycle requirements;
--   compatibility requirements.
+- operations;
+- states/transitions;
+- directive semantics;
+- execution preconditions;
+- authority requirements;
+- provenance requirements;
+- failure semantics;
+- lifecycle requirements;
+- compatibility requirements.
 
 It must remain within the parent semantic boundary.
 
@@ -475,7 +475,7 @@ cross-contract consistency, Semantic Delta, and unresolved gaps.
 
 **Stop until approved.**
 
-------------------------------------------------------------------------
+---
 
 # 10. Phase 7 --- Generate Runtime
 
@@ -485,7 +485,7 @@ Generate/update Runtime semantics from the approved Runtime Contract.
 
 Preferred architecture:
 
-``` text
+```text
 Stable Runtime Kernel
         +
 Versioned Generated Runtime Semantics
@@ -498,32 +498,32 @@ silently introduce Guvna semantics absent from the contract.
 
 Generated semantics may provide:
 
--   operations;
--   states;
--   transitions;
--   constraints;
--   directives;
--   authority requirements;
--   provenance requirements;
--   compatibility rules.
+- operations;
+- states;
+- transitions;
+- constraints;
+- directives;
+- authority requirements;
+- provenance requirements;
+- compatibility rules.
 
 ### Gate 7 --- Runtime Mutation Authority Gate
 
 Before mutation present:
 
--   exact files;
--   replacements;
--   preserved files;
--   generated source;
--   contract version;
--   semantic-to-code traceability;
--   behavioral impact;
--   tests;
--   migration implications.
+- exact files;
+- replacements;
+- preserved files;
+- generated source;
+- contract version;
+- semantic-to-code traceability;
+- behavioral impact;
+- tests;
+- migration implications.
 
 Human explicitly approves Runtime mutation.
 
-------------------------------------------------------------------------
+---
 
 # 11. Phase 8 --- Generate SDK
 
@@ -533,11 +533,11 @@ Generate the SDK from the approved SDK Contract.
 
 The SDK must:
 
--   reflect the SDK Contract;
--   expose contract-defined capabilities;
--   preserve semantic identity/version;
--   preserve required states/errors;
--   preserve provenance where required.
+- reflect the SDK Contract;
+- expose contract-defined capabilities;
+- preserve semantic identity/version;
+- preserve required states/errors;
+- preserve provenance where required.
 
 The SDK generator must not inspect Runtime implementation to discover
 public semantics.
@@ -546,18 +546,18 @@ public semantics.
 
 Present:
 
--   exact SDK files;
--   generated types;
--   operations;
--   public API changes;
--   breaking changes;
--   version implications;
--   conformance tests;
--   contract traceability.
+- exact SDK files;
+- generated types;
+- operations;
+- public API changes;
+- breaking changes;
+- version implications;
+- conformance tests;
+- contract traceability.
 
 Human explicitly approves SDK mutation.
 
-------------------------------------------------------------------------
+---
 
 # 12. Phase 9 --- Generate Conformance Tests
 
@@ -565,7 +565,7 @@ Human explicitly approves SDK mutation.
 
 Generate tests from contract obligations.
 
-``` text
+```text
 Applicable Contract
        ├── Runtime Generator
        ├── SDK Generator
@@ -574,28 +574,28 @@ Applicable Contract
 
 Test at least:
 
--   structural conformance;
--   semantic behavior;
--   state transitions;
--   invariants;
--   authority boundaries;
--   provenance;
--   compatibility;
--   failure behavior;
--   version behavior.
+- structural conformance;
+- semantic behavior;
+- state transitions;
+- invariants;
+- authority boundaries;
+- provenance;
+- compatibility;
+- failure behavior;
+- version behavior.
 
 ### Gate 9 --- Conformance Authority Gate
 
 Present generated tests, contract-obligation coverage, expected results,
 exclusions, and known failures.
 
-------------------------------------------------------------------------
+---
 
 # 13. Phase 10 --- Verification and Determinism
 
 Verify:
 
-``` text
+```text
 Contract Validation
       ↓
 Runtime Conformance
@@ -611,17 +611,17 @@ Build/Test
 
 Compile identical inputs repeatedly and verify identical:
 
--   Semantic IR;
--   Candidate Contract;
--   Applicable Contract;
--   Semantic Delta;
--   generated semantic artifacts.
+- Semantic IR;
+- Candidate Contract;
+- Applicable Contract;
+- Semantic Delta;
+- generated semantic artifacts.
 
 ### Gate 10 --- Release Verification Gate
 
 Present:
 
-``` text
+```text
 Contract:
 Runtime:
 SDK:
@@ -636,13 +636,13 @@ Known limitations:
 
 Human approval required before publication.
 
-------------------------------------------------------------------------
+---
 
 # 14. Phase 11 --- Publish Versioned Artifacts
 
 Conceptually:
 
-``` text
+```text
 contracts/
   candidate/
   ratified/
@@ -662,13 +662,13 @@ deltas/
 
 Every publication preserves:
 
--   semantic version;
--   contract identity;
--   provenance;
--   doctrine digest;
--   compiler version;
--   artifact digest;
--   conformance result.
+- semantic version;
+- contract identity;
+- provenance;
+- doctrine digest;
+- compiler version;
+- artifact digest;
+- conformance result.
 
 ### Gate 11 --- Publication Authority Gate
 
@@ -676,20 +676,20 @@ Present the exact publication manifest.
 
 No publication without explicit approval.
 
-------------------------------------------------------------------------
+---
 
 # 15. Phase 12 --- Repository Impact / Adoption Handoff
 
 Provide the Governed Repository with:
 
--   Applicable Semantic Contract;
--   Semantic Delta;
--   compatibility classification;
--   migration requirements;
--   projection impact;
--   SDK impact;
--   Runtime impact;
--   provenance.
+- Applicable Semantic Contract;
+- Semantic Delta;
+- compatibility classification;
+- migration requirements;
+- projection impact;
+- SDK impact;
+- Runtime impact;
+- provenance.
 
 Do not automatically modify repository-specific meaning.
 
@@ -699,7 +699,7 @@ Do not collapse Contract Ratification into Repository Acceptance.
 
 Present:
 
-``` text
+```text
 REPOSITORY IMPACT REPORT
 
 Applicable Contract:
@@ -715,13 +715,13 @@ Required repository authority:
 
 This gate does not authorize repository semantic mutation.
 
-------------------------------------------------------------------------
+---
 
 # 16. Phase 13 --- Governance Projection Regeneration
 
 Where an adopted contract requires a repository projection change:
 
-``` text
+```text
 Accepted Repository Knowledge
         +
 Repository Governance
@@ -740,23 +740,23 @@ contract governing its interpretation.
 
 Present:
 
--   source repository artifacts;
--   projection inputs;
--   Projection Contract version;
--   proposed projection;
--   semantic diff;
--   runtime impact;
--   provenance.
+- source repository artifacts;
+- projection inputs;
+- Projection Contract version;
+- proposed projection;
+- semantic diff;
+- runtime impact;
+- provenance.
 
 Human explicitly approves projection mutation.
 
-------------------------------------------------------------------------
+---
 
 # 17. Phase 14 --- Final System Acceptance
 
 Final architecture must demonstrate:
 
-``` text
+```text
 Doctrine
    ↓
 Semantic Model
@@ -792,47 +792,47 @@ Runtime
 
 Provide the complete evidence package:
 
--   doctrine baseline;
--   Semantic Model;
--   Semantic IR;
--   Candidate Contract;
--   validation;
--   compatibility;
--   provenance;
--   ratification record;
--   Runtime Contract;
--   SDK Contract;
--   Projection Contract;
--   Runtime artifacts;
--   SDK artifacts;
--   conformance results;
--   Semantic Delta;
--   determinism results;
--   repository impact report;
--   projection verification.
+- doctrine baseline;
+- Semantic Model;
+- Semantic IR;
+- Candidate Contract;
+- validation;
+- compatibility;
+- provenance;
+- ratification record;
+- Runtime Contract;
+- SDK Contract;
+- Projection Contract;
+- Runtime artifacts;
+- SDK artifacts;
+- conformance results;
+- Semantic Delta;
+- determinism results;
+- repository impact report;
+- projection verification.
 
 Human explicitly accepts completion.
 
-------------------------------------------------------------------------
+---
 
 # 18. Mandatory Stop Conditions
 
 The agent must stop and report rather than improvise when it encounters:
 
--   semantic ambiguity;
--   authority ambiguity;
--   ownership conflict;
--   contract inconsistency;
--   provenance failure;
--   compatibility indeterminacy;
--   non-determinism;
--   unexpected mutation;
--   generated-artifact drift.
+- semantic ambiguity;
+- authority ambiguity;
+- ownership conflict;
+- contract inconsistency;
+- provenance failure;
+- compatibility indeterminacy;
+- non-determinism;
+- unexpected mutation;
+- generated-artifact drift.
 
 A stop condition is an authority/semantic boundary, not an
 implementation inconvenience.
 
-------------------------------------------------------------------------
+---
 
 # 19. Required Phase Report
 
@@ -840,7 +840,7 @@ Every phase produces both human-readable and machine-readable evidence.
 
 Minimum machine-readable shape:
 
-``` yaml
+```yaml
 phase:
 status:
 authority_gate:
@@ -861,13 +861,13 @@ requires_approval: true
 
 The agent must never report proposed work as completed work.
 
-------------------------------------------------------------------------
+---
 
 # 20. Required Artifact Lineage
 
 Every generated semantic artifact must be traceable:
 
-``` text
+```text
 Doctrine Source
       ↓
 Doctrine Model
@@ -889,13 +889,13 @@ Conformance Evidence
 
 An artifact without this lineage is non-conforming.
 
-------------------------------------------------------------------------
+---
 
 # 21. Suggested Repository Layout
 
 Do not adopt this blindly; compare it against the Phase 0 baseline.
 
-``` text
+```text
 guvna/
 ├── doctrine/
 ├── compiler/
@@ -925,42 +925,42 @@ guvna/
 └── conformance/
 ```
 
-------------------------------------------------------------------------
+---
 
 # 22. Definition of Done
 
 The implementation is complete only when:
 
--   [ ] Doctrine is baselined.
--   [ ] Doctrine Semantic Model exists.
--   [ ] Semantic IR exists.
--   [ ] Doctrine compiles deterministically into Semantic IR.
--   [ ] Semantic IR compiles into Candidate Semantic Contract.
--   [ ] Semantic gaps fail closed.
--   [ ] Candidate validation succeeds.
--   [ ] Compatibility analysis succeeds.
--   [ ] Provenance is complete.
--   [ ] Candidate Contract is explicitly ratified.
--   [ ] Applicable Semantic Contract exists.
--   [ ] Runtime Contract exists.
--   [ ] SDK Contract exists.
--   [ ] Projection Contract exists.
--   [ ] Runtime is generated/updated from the Runtime Contract.
--   [ ] SDK is generated/updated from the SDK Contract.
--   [ ] Runtime is not the semantic source for SDK generation.
--   [ ] SDK is not the semantic source for Runtime generation.
--   [ ] Conformance tests exist.
--   [ ] Runtime conforms.
--   [ ] SDK conforms.
--   [ ] Compilation is deterministic.
--   [ ] Provenance is preserved end-to-end.
--   [ ] Semantic Delta is generated.
--   [ ] Repository impact is reported.
--   [ ] Projection changes pass their own authority gate.
--   [ ] Final evidence package is complete.
--   [ ] Human final acceptance is explicit.
+- [ ] Doctrine is baselined.
+- [ ] Doctrine Semantic Model exists.
+- [ ] Semantic IR exists.
+- [ ] Doctrine compiles deterministically into Semantic IR.
+- [ ] Semantic IR compiles into Candidate Semantic Contract.
+- [ ] Semantic gaps fail closed.
+- [ ] Candidate validation succeeds.
+- [ ] Compatibility analysis succeeds.
+- [ ] Provenance is complete.
+- [ ] Candidate Contract is explicitly ratified.
+- [ ] Applicable Semantic Contract exists.
+- [ ] Runtime Contract exists.
+- [ ] SDK Contract exists.
+- [ ] Projection Contract exists.
+- [ ] Runtime is generated/updated from the Runtime Contract.
+- [ ] SDK is generated/updated from the SDK Contract.
+- [ ] Runtime is not the semantic source for SDK generation.
+- [ ] SDK is not the semantic source for Runtime generation.
+- [ ] Conformance tests exist.
+- [ ] Runtime conforms.
+- [ ] SDK conforms.
+- [ ] Compilation is deterministic.
+- [ ] Provenance is preserved end-to-end.
+- [ ] Semantic Delta is generated.
+- [ ] Repository impact is reported.
+- [ ] Projection changes pass their own authority gate.
+- [ ] Final evidence package is complete.
+- [ ] Human final acceptance is explicit.
 
-------------------------------------------------------------------------
+---
 
 # 23. Final Agent Directive
 
@@ -981,21 +981,21 @@ The agent's responsibility is to:
 
 The agent SHALL NEVER:
 
--   invent missing Guvna semantics;
--   infer authority from implementation convenience;
--   bypass a gate;
--   combine separate authority boundaries;
--   silently mutate outside approved scope;
--   treat generated code as doctrine;
--   treat Runtime behavior as semantic authority;
--   treat SDK behavior as semantic authority;
--   treat repository-specific truth as a source of Guvna semantics;
--   declare a Candidate Contract applicable without explicit
-    ratification.
+- invent missing Guvna semantics;
+- infer authority from implementation convenience;
+- bypass a gate;
+- combine separate authority boundaries;
+- silently mutate outside approved scope;
+- treat generated code as doctrine;
+- treat Runtime behavior as semantic authority;
+- treat SDK behavior as semantic authority;
+- treat repository-specific truth as a source of Guvna semantics;
+- declare a Candidate Contract applicable without explicit
+  ratification.
 
 ## Desired End State
 
-``` text
+```text
                          GUVNA
                            │
                    Accepted Doctrine
