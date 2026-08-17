@@ -10,5 +10,5 @@ When a required semantic or authority decision is missing, **stop and report the
 
 - Whole workspace: `pnpm build`, `pnpm test`, `pnpm typecheck`, `pnpm lint`
   (each runs recursively via `pnpm -r`).
-- `core` package only: `pnpm --filter guvna-core <script>`, or
+- `core` package only: `pnpm --filter @guvna/core <script>`, or
   `pnpm -C core validate:platform` (typecheck + test).

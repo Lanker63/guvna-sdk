@@ -1,4 +1,7 @@
 flowchart TD
+    classDef realized fill:#d9f2d9,stroke:#4d8f4d,color:#1f3d1f
+    classDef partial fill:#fff4cc,stroke:#b38f00,color:#4d3d00
+
     subgraph SYS_B["System B — Ontology USED WITHIN Runtime/Core (content-facing, applied per Governed Repository)"]
         RInfo["Repository Information"] --> RIntel["Repository Intelligence"]
         RIntel --> RWis["Repository Wisdom"]
@@ -16,3 +19,7 @@ flowchart TD
 
     RT2 -. "evaluates/enforces this model;\ndoes not author Repository Truth" .-> RInfo
     RT2 -. "evaluates/enforces this model;\ndoes not author Repository Truth" .-> RTruth
+
+    class RInfo,RIntel,RWis,RAuth,ADec,ACC,RTruth,RKnow,RUnd realized
+    class APP2 realized
+    class RT2 partial

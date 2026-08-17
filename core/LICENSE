@@ -1,0 +1,76 @@
+Guvna Core Commercial License
+
+Copyright (c) 2026 Guvna. All rights reserved.
+
+This license governs the licensed compiled runtime distributed as
+@guvna/core (the "Software"). The Software is proprietary commercial software
+and is not distributed under an open-source license.
+
+1. Grant of license
+
+Subject to a valid, paid-up commercial agreement with Guvna, Guvna grants the
+licensed customer ("Licensee") a limited, non-exclusive, non-transferable,
+non-sublicensable right to install and use the Software during the applicable
+license term, solely for the host applications, environments, deployment
+limits, and purposes stated in that agreement.
+
+2. Restrictions
+
+Except as expressly permitted by a written agreement with Guvna, Licensee
+must not:
+
+- copy, publish, sell, rent, lease, lend, distribute, or sublicense the
+  Software;
+- make the Software available to an unauthorized third party or use it to
+  provide an unauthorized hosted or managed service;
+- modify, adapt, translate, or create derivative works of the Software;
+- reverse engineer, decompile, disassemble, or otherwise attempt to discover
+  the source code or non-public interfaces of the Software;
+- remove, obscure, or bypass copyright, licensing, entitlement, or technical
+  protection notices or controls; or
+- exceed the authorized host, environment, usage, or deployment limits.
+
+3. Ownership
+
+Guvna retains all right, title, and interest in and to the Software,
+including all intellectual property rights. This license grants only the
+limited rights expressly stated here and transfers no ownership interest.
+
+4. License term and termination
+
+The license begins on the effective date stated in the applicable commercial
+agreement and ends when that agreement expires or is terminated. Rights to
+use the Software end immediately upon termination or expiration. Licensee
+must stop using the Software and remove it from its environments as required
+by the applicable agreement. Guvna may suspend or terminate access for
+non-payment, material breach, unauthorized use, or circumvention of licensing
+controls, subject to any notice and cure rights in the applicable agreement.
+
+5. Verification and audit
+
+Where provided for in the applicable commercial agreement, Guvna may verify
+Licensee's compliance with authorized deployment and usage limits on
+reasonable notice and during reasonable business hours.
+
+6. Warranty and liability
+
+The Software is provided under the warranties, service commitments, support
+terms, limitations of liability, and indemnities stated in the applicable
+commercial agreement. To the maximum extent permitted by law, this notice
+provides no additional warranties, express or implied, and Guvna is not liable
+for indirect, incidental, special, consequential, or punitive damages arising
+from use of the Software.
+
+7. Commercial terms
+
+Pricing, subscription or perpetual-license rights, support, service levels,
+activation, deployment limits, data handling, governing law, and other
+customer-specific terms must be stated in a separate written commercial
+agreement. In the event of a conflict, that agreement controls.
+
+8. No public distribution
+
+The Software must not be published to a public package registry or included
+as a public dependency of a third-party host. Third-party hosts should consume
+@guvna/sdk and interact with the licensed runtime only through the approved
+runtime protocol.
