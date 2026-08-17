@@ -1,4 +1,7 @@
 flowchart TD
+    classDef realized fill:#d9f2d9,stroke:#4d8f4d,color:#1f3d1f
+    classDef partial fill:#fff4cc,stroke:#b38f00,color:#4d3d00
+
     subgraph SYS_A["System A — Ontology that DEFINES Runtime/Core (self-referential, architectural)"]
         CD["Constitutional Doctrine"] --> CM["Canonical Models"]
         CM --> AD["Architectural Doctrine"]
@@ -12,6 +15,9 @@ flowchart TD
         APP --> SDKX["SDK"]
         APP --> ART["Compatibility Artifacts"]
     end
+
+    class CM,AD,SC,COMP,CAND,VAL,RAT,APP realized
+    class RT partial
 
     subgraph SYS_B_REF["System B (separate — see Chart 2)"]
         RIref["Repository Information ... Repository Understanding"]

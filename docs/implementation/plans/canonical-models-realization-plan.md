@@ -2,7 +2,7 @@
 
 ## 1. Desired State and Scope
 
-This plan tracks the phased realization of Guvna Core from Constitutional Doctrine through Applicable Semantic Contract, beginning with Canonical Models as the first node to realize.
+This plan tracks the phased realization of Guvna Core from Constitutional Doctrine through Applicable Semantic Contract, beginning with Canonical Models as the first node to realize. Canonical Models are now accepted as complete based on the implemented, source-attributed model and its fail-closed validation tests.
 
 Desired state:
 
@@ -58,13 +58,13 @@ Runtime realization remains a separate downstream boundary after applicability s
 
 Gaps:
 
-- Canonical Models are not yet fully realized as explicit semantic source concepts.
+- Canonical Models are completely realized as explicit, attributable semantic source concepts in the current implementation.
 - The repository-facing epistemic pipeline is incomplete on the reviewed surface.
 - Runtime interpretation and execution are not yet realized as a downstream boundary consuming the Applicable Semantic Context.
 
 Blockers:
 
-- The plan cannot claim authoritative downstream realization until Canonical Models are explicit and attributable.
+- Downstream realization remains conditional on the completed Canonical Models source boundary and the requirements of each subsequent phase.
 - The plan cannot treat validation as ratification.
 - The plan cannot treat applicability selection as runtime interpretation or execution.
 - The plan cannot fill any missing authority decision by inference.
@@ -76,11 +76,11 @@ Assumptions:
 
 ## 5. Phased Plan
 
-### Phase 1: Canonical Models Realization
+### Phase 1: Canonical Models Realization — Complete
 
 Objective
 
-Realize Canonical Models as explicit, attributable semantic source concepts drawn from accepted constitutional and canonical doctrine.
+Realize Canonical Models as explicit, attributable semantic source concepts drawn from accepted constitutional and canonical doctrine. This phase is complete.
 
 Inputs and prerequisites
 
