@@ -27,7 +27,8 @@
     "build": "tsc -p tsconfig.json",
     "typecheck": "tsc -p tsconfig.json --noEmit",
     "test": "vitest run",
-    "check:publication-boundary": "node scripts/check-publication-boundary.mjs"
+    "check:publication-boundary": "node scripts/check-publication-boundary.mjs",
+    "validate:release": "node scripts/validate-release.mjs"
   },
   "devDependencies": {
     "@types/node": "^24.3.0",
