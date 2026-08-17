@@ -19,6 +19,18 @@ export type RatificationResult =
   | { ok: true; contract: SemanticContractReference; record: RatificationRecord }
   | { ok: false; reason: string };
 
+export interface ApplicabilityInput {
+  contract: SemanticContractReference;
+  authorityDecision: SemanticRef;
+  authority: AuthorityEvidence;
+  exactScope: boolean;
+  effectiveBoundary: boolean;
+}
+
+export type ApplicabilityResult =
+  | { ok: true; contract: SemanticContractReference }
+  | { ok: false; reason: string };
+
 export function ratifyValidatedContract(input: RatificationInput | null | undefined): RatificationResult {
   if (!input) return { ok: false, reason: "Ratification input is absent" };
   const { contract } = input;
@@ -56,6 +68,33 @@ export function ratifyValidatedContract(input: RatificationInput | null | undefi
       ...contract,
       lifecycle: { ...contract.lifecycle, lifecycleState: { identity: { identityKind: "lifecycle", value: "ratified" } } },
       ratification: { ...contract.ratification, ratified: true, authorityDecision: input.authorityDecision, record },
+    },
+  };
+}
+
+export function applyRatifiedContract(input: ApplicabilityInput | null | undefined): ApplicabilityResult {
+  if (!input) return { ok: false, reason: "Applicability input is absent" };
+  const { contract } = input;
+  if (!isSemanticRef(input.authorityDecision)) return { ok: false, reason: "Applicability authority decision reference is invalid" };
+  if (input.authorityDecision.identity.value !== input.authority.decisionIdentity) return { ok: false, reason: "Applicability authority decision reference does not match authority evidence" };
+  if (!contract.ratification.ratified || contract.lifecycle.lifecycleState.identity.value !== "ratified") return { ok: false, reason: "Only ratified contracts may become applicable" };
+  if (contract.applicability.applicable !== "indeterminate") return { ok: false, reason: "Contract governance state is not eligible for applicability" };
+  const lifecycle = evaluateLifecycle({
+    state: "ratified",
+    operation: "apply",
+    contractIdentity: contract.identity.value,
+    contractVersion: contract.version.value,
+    scope: contract.applicability.scope.identity.value,
+    provenance: contract.provenance,
+    guards: { authority: input.authority, exactScope: input.exactScope, effectiveBoundary: input.effectiveBoundary },
+  });
+  if (!lifecycle.permitted) return { ok: false, reason: lifecycle.reason };
+  return {
+    ok: true,
+    contract: {
+      ...contract,
+      lifecycle: { ...contract.lifecycle, lifecycleState: { identity: { identityKind: "lifecycle", value: "applicable" } } },
+      applicability: { ...contract.applicability, applicable: true, authorityDecision: input.authorityDecision },
     },
   };
 }

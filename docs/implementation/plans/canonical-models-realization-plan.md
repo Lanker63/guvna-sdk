@@ -52,7 +52,7 @@ Current implementation evidence indicates that Guvna Core already has a substant
 
 Current implementation evidence also indicates that the repository does not yet expose a complete repository-facing epistemic pipeline that operationalizes Repository Information -> Evidence -> Repository Intelligence -> Repository Wisdom -> Repository Authority -> Acceptance -> Repository Truth -> Repository Knowledge -> Repository Understanding.
 
-Runtime and SDK realization boundaries are not present in the reviewed implementation surface.
+Runtime realization remains a separate downstream boundary after applicability selection and is not yet present in the reviewed implementation surface.
 
 ## 4. Gaps, Blockers, and Assumptions
 
@@ -60,12 +60,13 @@ Gaps:
 
 - Canonical Models are not yet fully realized as explicit semantic source concepts.
 - The repository-facing epistemic pipeline is incomplete on the reviewed surface.
-- Runtime and SDK realization boundaries are not yet present in the reviewed implementation surface.
+- Runtime interpretation and execution are not yet realized as a downstream boundary consuming the Applicable Semantic Context.
 
 Blockers:
 
 - The plan cannot claim authoritative downstream realization until Canonical Models are explicit and attributable.
 - The plan cannot treat validation as ratification.
+- The plan cannot treat applicability selection as runtime interpretation or execution.
 - The plan cannot fill any missing authority decision by inference.
 
 Assumptions:
@@ -305,6 +306,44 @@ Stop conditions
 - Any downstream consumer that treats a candidate, draft, or merely generated contract as applicable.
 - Any path that bypasses ratification.
 
+### Phase 8: Runtime Realization
+
+Objective
+
+Realize Runtime interpretation and execution as a downstream boundary that consumes the Applicable Semantic Context selected by the governing contract process.
+
+Inputs and prerequisites
+
+- Phase 7 output: Applicable Semantic Contract and the Applicable Semantic Context selected from it.
+- The runtime-facing selection boundary that is already approved and fail-closed.
+- The ratified contract, applicability state, and governing scope.
+
+Scope and concrete work items
+
+- Consume only the applicable contract/context selected by the governing contract process.
+- Interpret and execute behavior only from the applicable runtime-facing context.
+- Preserve the distinction between applicability selection and runtime interpretation.
+- Fail closed on missing, ambiguous, non-applicable, invalid, or otherwise unavailable applicable contract/context inputs.
+- Keep runtime realization narrow: no new semantic source, no contract ratification, and no bypass of the governing selection boundary.
+
+Validation and evidence
+
+- Evidence artifact: runtime-facing execution path that accepts only the selected Applicable Semantic Context.
+- Evidence artifact: tests proving runtime fails closed for missing, ambiguous, non-applicable, or invalid contract/context inputs.
+- Evidence artifact: tests proving runtime does not interpret candidate, draft, validated-only, or otherwise non-applicable contract states.
+
+Exit criteria
+
+- Runtime interpretation and execution are realized as a separate downstream boundary.
+- Runtime consumes only the Applicable Semantic Context selected by the governing contract process.
+- The runtime boundary fails closed for invalid or unavailable applicability inputs.
+
+Stop conditions
+
+- Any runtime path that infers meaning from a non-applicable contract state.
+- Any runtime path that bypasses applicability selection or weakens fail-closed behavior.
+- Any attempt to collapse runtime interpretation into contract selection.
+
 ## 6. Certification Matrix
 
 | Requirement | Authoritative source | Implementation/test surfaces to change | Deterministic validation |
@@ -316,6 +355,7 @@ Stop conditions
 | Semantic Validation must determine conformance and fail closed when the source is insufficient | [doctrine/core/architecture/ARCHITECTURAL-INVARIANTS.md](../../../doctrine/core/architecture/ARCHITECTURAL-INVARIANTS.md), [doctrine/core/constitution/EPISTEMIC-INVARIANTS.md](../../../doctrine/core/constitution/EPISTEMIC-INVARIANTS.md) | Validation and applicability evaluation surfaces in [core/src/compiler](../../../core/src/compiler) | Negative tests for missing, ambiguous, or contradictory authority |
 | Contract Ratification must be attributable, versioned, and distinct from validation | [doctrine/core/architecture/ARCHITECTURAL-INVARIANTS.md](../../../doctrine/core/architecture/ARCHITECTURAL-INVARIANTS.md), [doctrine/core/architecture/REPOSITORY-ADOPTION-INFORMATION-CONTRACT.md](../../../doctrine/core/architecture/REPOSITORY-ADOPTION-INFORMATION-CONTRACT.md) | Ratification and lifecycle surfaces in [core/src/compiler](../../../core/src/compiler) | Tests proving ratification is separate from compilation and validation |
 | Applicable Semantic Contract must be downstream of ratification and govern Runtime interpretation | [doctrine/core/architecture/CONCEPTUAL-ARCHITECTURE.md](../../../doctrine/core/architecture/CONCEPTUAL-ARCHITECTURE.md), [doctrine/core/architecture/ARCHITECTURAL-INVARIANTS.md](../../../doctrine/core/architecture/ARCHITECTURAL-INVARIANTS.md) | Applicability resolution surfaces and downstream runtime-facing boundaries | Tests proving only the applicable state governs interpretation |
+| Runtime must consume only the Applicable Semantic Context and fail closed on invalid applicability inputs | [doctrine/core/architecture/CONCEPTUAL-ARCHITECTURE.md](../../../doctrine/core/architecture/CONCEPTUAL-ARCHITECTURE.md), [doctrine/core/architecture/ARCHITECTURAL-INVARIANTS.md](../../../doctrine/core/architecture/ARCHITECTURAL-INVARIANTS.md) | Runtime interpretation and execution surfaces downstream of applicability selection | Tests proving runtime refuses missing, ambiguous, non-applicable, or invalid contract/context inputs |
 
 ## 7. Open Authority Decisions
 
@@ -327,4 +367,4 @@ Stop conditions
 
 Status: conditional and authority-bound.
 
-This plan is complete as a planning artifact, but it remains blocked wherever a required semantic authority is missing or contradictory. It intentionally preserves the provided assessment, phase gates, validation evidence, exit criteria, stop conditions, and open authority decisions in meaning while organizing them into a sequential realization plan.
+This plan is complete as a planning artifact, but it remains blocked wherever a required semantic authority is missing or contradictory. Phase 7 is complete in compiler scope; remaining work is represented as the separate Runtime realization phase after applicability selection. The plan intentionally preserves the provided assessment, phase gates, validation evidence, exit criteria, stop conditions, and open authority decisions in meaning while organizing them into a sequential realization plan.
