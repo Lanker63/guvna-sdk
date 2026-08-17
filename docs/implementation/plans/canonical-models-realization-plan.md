@@ -244,7 +244,7 @@ Stop conditions
 
 Objective
 
-Ratify a validated contract as the applicable formal contract for the governed scope.
+Ratify a validated contract as the formal contract eligible for applicability within the governed scope.
 
 Inputs and prerequisites
 
@@ -320,7 +320,7 @@ Stop conditions
 ## 7. Open Authority Decisions
 
 1. Whether and where canonical lifecycle vocabulary is extended for release or stability if needed.
-2. Whether first-release ratification needs a dedicated artifact or surface.
+2. First release does not require a separate persisted ratification artifact; the serializable ratification record in the Semantic IR/provenance model is the ratification evidence surface.
 3. Whether any other authority gap must be preserved as a conditional or blocked decision to keep doctrine boundaries intact.
 
 ## 8. Planning Status

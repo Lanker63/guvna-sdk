@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { evaluateCompatibility } from "../../src/compiler/compatibility.js";
-import { evaluateLifecycle } from "../../src/compiler/contract-lifecycle.js";
+import { evaluateLifecycle, ratifyValidatedContract } from "../../src/compiler/contract-lifecycle.js";
 import { createIdentity } from "../../src/compiler/ir-identity.js";
 import { serializeCompactJson, serializeSemanticIR } from "../../src/compiler/ir-serializer.js";
 import { appendProvenance, preserveProvenance } from "../../src/compiler/provenance.js";
@@ -47,7 +47,14 @@ describe("compiler foundations", () => {
 
     const ratification = { ...input, state: "validated" as const, operation: "ratify" as const };
     expect(evaluateLifecycle(ratification).permitted).toBe(false);
-    expect(evaluateLifecycle({ ...ratification, guards: { authority: { authorityIdentity: "human", decisionIdentity: "decision", decisionScope: "scope", contractIdentity: "id", contractVersion: "1.0.0", provenance: {} } } })).toEqual({ permitted: true, nextState: "ratified" });
+    const authority = { authorityIdentity: "human", decisionIdentity: "decision", decisionVersion: "1", decisionScope: "scope", contractIdentity: "id", contractVersion: "1.0.0", provenance: {} };
+    expect(evaluateLifecycle({ ...ratification, guards: { authority } })).toEqual({ permitted: true, nextState: "ratified" });
+    expect(evaluateLifecycle({ ...ratification, guards: { authority: { ...authority, contractIdentity: "other" } } }).permitted).toBe(false);
+    expect(evaluateLifecycle({ ...ratification, guards: { authority: { ...authority, contractVersion: "2.0.0" } } }).permitted).toBe(false);
+    expect(evaluateLifecycle({ ...ratification, guards: { authority: { ...authority, decisionScope: "other" } } }).permitted).toBe(false);
+    expect(evaluateLifecycle({ ...ratification, guards: { authority: { ...authority, decisionVersion: "" } } }).permitted).toBe(false);
+    expect(evaluateLifecycle({ ...ratification, guards: { authority }, state: "candidate" as const }).permitted).toBe(false);
+    expect(evaluateLifecycle({ ...ratification, guards: { authority } })).not.toMatchObject({ nextState: "applicable" });
   });
 
   it("aggregates externally evaluated compatibility requirements without predicate invention", () => {

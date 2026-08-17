@@ -77,7 +77,20 @@ describe("validateSemanticIR", () => {
       elements: contractElements,
       lifecycle: { lifecycleState: { identity }, transitions: [] },
       applicability: { applicable: "indeterminate" as const, scope, conditions: [], provenance: [{ sourceIdentity: identity }] },
-      ratification: { ratified: true, requiresHumanAuthority: true, provenance: [{ sourceIdentity: identity }] },
+      ratification: {
+        ratified: true,
+        requiresHumanAuthority: true,
+        provenance: [{ sourceIdentity: identity }],
+        record: {
+          candidateContractIdentity: identity,
+          candidateContractVersion: "1.0.0",
+          validationEvidence: { identity },
+          validationResult: "conformant" as const,
+          ratificationEvent: { identity },
+          ratifiedContractVersion: "1.0.0",
+          applicableScope: scope,
+        },
+      },
       provenance: [{ sourceIdentity: identity }],
     };
 
@@ -89,6 +102,36 @@ describe("validateSemanticIR", () => {
         authorityContext: { ...validIR.authorityContext, authorityDecisions: [{ ...authorityDecision, decision: "ratify" as const }] },
       }).valid,
     ).toBe(true);
+  });
+
+  it("accepts an attributable ratification record without making the contract applicable", () => {
+    const contract = {
+      identity,
+      version: { value: "1.0.0", semanticIdentity: { identity }, scope },
+      contractKind: "semantic" as const,
+      elements: contractElements,
+      lifecycle: { lifecycleState: { identity }, transitions: [] },
+      applicability: { applicable: "indeterminate" as const, scope, conditions: [], provenance: [{ sourceIdentity: identity }] },
+      ratification: {
+        ratified: true,
+        requiresHumanAuthority: true,
+        authorityDecision: { identity },
+        provenance: [{ sourceIdentity: identity }],
+        record: {
+          candidateContractIdentity: identity,
+          candidateContractVersion: "1.0.0",
+          validationEvidence: { identity },
+          validationResult: "conformant" as const,
+          ratificationEvent: { identity },
+          ratifiedContractVersion: "1.0.0",
+          applicableScope: scope,
+        },
+      },
+      provenance: [{ sourceIdentity: identity }],
+    };
+
+    expect(validateSemanticIR({ ...validIR, contracts: [contract], authorityContext: { ...validIR.authorityContext, authorityDecisions: [{ ...authorityDecision, decision: "ratify" as const }] } }).valid).toBe(true);
+    expect(contract.applicability.applicable).toBe("indeterminate");
   });
 
   it("requires authority for applicable contracts", () => {

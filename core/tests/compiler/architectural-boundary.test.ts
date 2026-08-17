@@ -12,6 +12,16 @@ const ir = {
   authorityContext: { authorityDecisions: [{ identity: { identityKind: "semantic", value: "apply" }, authorityIdentity: { identity: { identityKind: "semantic", value: "authority" }, principal: { identity: { identityKind: "semantic", value: "principal" } }, provenance: [] }, subject: { identity: { identityKind: "semantic", value: "contract" } }, scope: { identity: { identityKind: "semantic", value: "abc" }, meaning: { statement: "Meaning", terms: [] } }, subjectContractIdentity: { identityKind: "semantic", value: "contract" }, subjectContractVersion: "1.0.0", decision: "apply" as const, provenance: [] }, { identity: { identityKind: "semantic", value: "ratify" }, authorityIdentity: { identity: { identityKind: "semantic", value: "authority" }, principal: { identity: { identityKind: "semantic", value: "principal" } }, provenance: [] }, subject: { identity: { identityKind: "semantic", value: "contract" } }, scope: { identity: { identityKind: "semantic", value: "abc" }, meaning: { statement: "Meaning", terms: [] } }, subjectContractIdentity: { identityKind: "semantic", value: "contract" }, subjectContractVersion: "1.0.0", decision: "ratify" as const, provenance: [] }], acceptances: [], uncertainty: [], contradictions: [], delegations: [] }, provenance: { records: [], conflicts: [] }, compatibility: [],
 };
 
+ir.contracts[0].ratification.record = {
+  candidateContractIdentity: ir.contracts[0].identity,
+  candidateContractVersion: ir.contracts[0].version.value,
+  validationEvidence: { identity: ir.contracts[0].identity },
+  validationResult: "conformant",
+  ratificationEvent: { identity: { identityKind: "event", value: "ratification" } },
+  ratifiedContractVersion: ir.contracts[0].version.value,
+  applicableScope: ir.contracts[0].applicability.scope,
+};
+
 const binding = (identity: string, layer: ArchitecturalBinding["layer"], owner: ArchitecturalBinding["owner"] = "guvna", path: ArchitecturalBinding["path"] = "guvna", contentOwner: ArchitecturalBinding["contentOwner"] = owner): ArchitecturalBinding => ({ identity: { identityKind: "semantic", value: identity }, path, layer, owner, contentOwner, provenance: [{ sourceIdentity: { identityKind: "semantic", value: "abc" } }] });
 const completeBindings = [binding("abc", "canonical"), binding("contract", "contract"), binding("runtime", "realization", "runtime"), binding("apply", "ratification"), binding("ratify", "ratification")];
 

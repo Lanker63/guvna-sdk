@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { compileAndValidateCandidateSemanticContract, validateCandidateSemanticContract } from "../../src/compiler/semantic-validation.js";
+import { ratifyValidatedContract } from "../../src/compiler/contract-lifecycle.js";
 
 const identity = { identityKind: "semantic", value: "contract-1" };
 const scope = { identity, meaning: { statement: "accepted meaning", terms: [] } };
@@ -64,6 +65,69 @@ describe("validateCandidateSemanticContract", () => {
       expect(result.evidence.provenance.transformations[0].kind).toBe("resolve");
       expect(result.evidence.provenance.subject).toEqual({ identity });
     }
+  });
+
+  it("passes validated output through attributable ratification without applying it", () => {
+    const result = compileAndValidateCandidateSemanticContract(source);
+
+    expect(result.ok).toBe(true);
+    if (!result.ok) return;
+
+    const ratification = ratifyValidatedContract({
+      contract: result.contract,
+      validationEvidence: { identity: result.evidence.provenance.identity },
+      ratificationEvent: { identity: { identityKind: "event", value: "ratification-1" } },
+      authorityDecision: { identity: { identityKind: "decision", value: "ratification-1" } },
+      authority: {
+        authorityIdentity: "authority-1",
+        decisionIdentity: "ratification-1",
+        decisionVersion: "1",
+        decisionScope: result.contract.applicability.scope.identity.value,
+        contractIdentity: result.contract.identity.value,
+        contractVersion: result.contract.version.value,
+        provenance: result.evidence.provenance,
+      },
+    });
+
+    expect(ratification.ok).toBe(true);
+    if (ratification.ok) {
+      expect(ratification.contract.lifecycle.lifecycleState.identity.value).toBe("ratified");
+      expect(ratification.contract.ratification.ratified).toBe(true);
+      expect(ratification.contract.ratification.record).toEqual(ratification.record);
+      expect(ratification.contract.applicability.applicable).toBe("indeterminate");
+    }
+    expect(result.contract.ratification.ratified).toBe(false);
+  });
+
+  it("fails closed for disconnected authority and evidence references", () => {
+    const result = compileAndValidateCandidateSemanticContract(source);
+    expect(result.ok).toBe(true);
+    if (!result.ok) return;
+
+    const input = {
+      contract: result.contract,
+      validationEvidence: { identity: result.evidence.provenance.identity },
+      ratificationEvent: { identity: { identityKind: "event", value: "ratification-1" } },
+      authorityDecision: { identity: { identityKind: "decision", value: "other-decision" } },
+      authority: {
+        authorityIdentity: "authority-1",
+        decisionIdentity: "ratification-1",
+        decisionVersion: "1",
+        decisionScope: result.contract.applicability.scope.identity.value,
+        contractIdentity: result.contract.identity.value,
+        contractVersion: result.contract.version.value,
+        provenance: result.evidence.provenance,
+      },
+    };
+
+    expect(ratifyValidatedContract(input)).toEqual({
+      ok: false,
+      reason: "Ratification authority decision reference does not match authority evidence",
+    });
+    expect(ratifyValidatedContract({ ...input, authorityDecision: { identity: { identityKind: "decision", value: "" } } })).toEqual({
+      ok: false,
+      reason: "Ratification evidence references are invalid",
+    });
   });
 
   it.each([
