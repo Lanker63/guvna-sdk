@@ -2,6 +2,8 @@ import { describe, expect, it } from 'vitest';
 import {
   decodeRuntimeOperation,
   decodeRuntimeRequest,
+  encodeDomainPackRequest,
+  decodeDomainPackInstallResponse,
   encodeRuntimeFailureResponse,
   encodeRuntimeRequest,
   encodeRuntimeResponse,
@@ -97,6 +99,34 @@ const adapter: RuntimeProtocolAdapter = {
 };
 
 describe('SDK Runtime transport', () => {
+  it('encodes opaque Domain Pack host requests without interpreting payloads', () => {
+    const payload = { source: 'approved-source', manifest: { opaque: true } };
+    expect(encodeDomainPackRequest('request-1', 'discoverDomainPacks', context, payload, adapter)).toEqual({
+      ok: true,
+      value: JSON.stringify({
+        protocolVersion: '1',
+        requestId: 'request-1',
+        operation: 'discoverDomainPacks',
+        context,
+        payload,
+      }),
+    });
+  });
+
+  it('decodes an opaque Domain Pack installation response', () => {
+    const response = JSON.stringify({
+      protocolVersion: '1',
+      requestId: 'request-2',
+      ok: true,
+      payload: { packIdentity: 'approved-pack', manifest: '{"identity":"opaque"}' },
+    });
+
+    expect(decodeDomainPackInstallResponse('request-2', response)).toEqual({
+      ok: true,
+      value: { packIdentity: 'approved-pack', manifest: '{"identity":"opaque"}' },
+    });
+  });
+
   it('preserves the approved protocol request envelope', () => {
     const encoded = encodeRuntimeRequest('request-1', context, operation, adapter);
     expect(encoded).toEqual({

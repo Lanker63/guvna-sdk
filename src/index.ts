@@ -48,6 +48,56 @@ export type RuntimeProtocolResponseEnvelope =
   | RuntimeProtocolResponse
   | RuntimeProtocolFailureResponse;
 
+export type DomainPackHostOperation = 'discoverDomainPacks' | 'installDomainPack';
+
+export interface DomainPackHostRequest {
+  protocolVersion: '1';
+  requestId: string;
+  operation: DomainPackHostOperation;
+  context: ApplicableSemanticContext;
+  payload: unknown;
+}
+
+export interface DomainPackInstallResponse {
+  packIdentity: string;
+  manifest: string;
+}
+
+export function decodeDomainPackInstallResponse(
+  requestId: string,
+  payload: string,
+): SdkTransportResult<DomainPackInstallResponse> {
+  if (!requestId) return { ok: false, reason: 'SDK request identifier is missing' };
+  const parsed = parseJson(payload);
+  if (!parsed.ok) return parsed;
+  if (!isDomainPackInstallResponseEnvelope(parsed.value, requestId)) {
+    return { ok: false, reason: 'SDK Domain Pack installation response is invalid' };
+  }
+  return { ok: true, value: parsed.value.payload };
+}
+
+export function encodeDomainPackRequest(
+  requestId: string,
+  operation: DomainPackHostOperation,
+  context: ApplicableSemanticContext | null | undefined,
+  payload: unknown,
+  adapter: RuntimeProtocolAdapter,
+): SdkTransportResult<string> {
+  const admission = admitSdkContext(context, adapter);
+  if (!admission.ok) return admission;
+  if (!requestId) return { ok: false, reason: 'SDK request identifier is missing' };
+  return {
+    ok: true,
+    value: JSON.stringify({
+      protocolVersion: '1',
+      requestId,
+      operation,
+      context: admission.context,
+      payload,
+    } satisfies DomainPackHostRequest),
+  };
+}
+
 export function encodeRuntimeRequest(
   requestId: string,
   context: ApplicableSemanticContext | null | undefined,
@@ -134,6 +184,19 @@ function isRequestEnvelope(value: unknown): value is RuntimeProtocolRequest {
     typeof (value as Record<string, unknown>).operation === 'string' &&
     'context' in value && 'payload' in value
   );
+}
+
+function isDomainPackInstallResponseEnvelope(
+  value: unknown,
+  requestId: string,
+): value is { protocolVersion: '1'; requestId: string; ok: true; payload: DomainPackInstallResponse } {
+  if (typeof value !== 'object' || value === null) return false;
+  const envelope = value as Record<string, unknown>;
+  if (envelope.protocolVersion !== '1' || envelope.requestId !== requestId || envelope.ok !== true) return false;
+  if (typeof envelope.payload !== 'object' || envelope.payload === null) return false;
+  const response = envelope.payload as Record<string, unknown>;
+  return typeof response.packIdentity === 'string' && response.packIdentity.length > 0
+    && typeof response.manifest === 'string';
 }
 
 export function admitSdkContext(
