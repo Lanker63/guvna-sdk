@@ -138,6 +138,11 @@ Exit criteria
 - Architectural Doctrine reflects the canonical source path without reversing dependency direction.
 - Ownership and boundary distinctions are explicit and attributable.
 
+Implementation status
+
+- Phase 2 is complete in its reviewed implementation scope.
+- Architectural boundaries, dependency direction, ownership separation, and the ratification boundary are realized and covered by fail-closed validation tests.
+
 Stop conditions
 
 - Any architectural change that silently relocates authority.
@@ -169,6 +174,11 @@ Exit criteria
 
 - Semantic Contract meaning is formalized and attributable.
 - The contract surface is ready to be compiled into a candidate contract.
+
+Implementation status
+
+- Phase 3 is complete in its reviewed implementation scope.
+- Semantic Contracts are formalized, attributable, and separated from repository-specific meaning.
 
 Stop conditions
 
@@ -203,6 +213,11 @@ Exit criteria
 - Candidate Semantic Contract exists and is attributable to accepted source.
 - The candidate is ready for validation.
 
+Implementation status
+
+- Phase 4 is complete in its reviewed implementation scope.
+- Candidate compilation preserves source provenance and deterministic derivation while leaving the candidate eligible for validation.
+
 Stop conditions
 
 - Any compilation step that silently creates new meaning.
@@ -236,6 +251,11 @@ Exit criteria
 - Validation determines whether the candidate is eligible for ratification.
 - Validation evidence is deterministic and attributable.
 
+Implementation status
+
+- Phase 5 is complete in its reviewed implementation scope.
+- Semantic validation is distinct from ratification and fails closed when governing authority is insufficient or contradictory.
+
 Stop conditions
 
 - Any validation path that infers missing authority.
@@ -268,6 +288,11 @@ Exit criteria
 
 - The validated contract is ratified.
 - The ratified contract is eligible to become applicable.
+
+Implementation status
+
+- Phase 6 is complete in its reviewed implementation scope.
+- Ratification is attributable and versioned, and remains distinct from compilation, validation, and applicability.
 
 Stop conditions
 
@@ -531,4 +556,4 @@ Stop conditions
 
 Status: conditional and authority-bound.
 
-This plan is complete as a planning artifact, but it remains blocked wherever a required semantic authority is missing or contradictory. Phase 7, Phase 8A, Phase 8B-1, and Phase 8B-2 are complete in their reviewed implementation scopes. Canonical lifecycle vocabulary is resolved by Authority Decision 1. Host execution remains outside this plan unless separately authorized. Phase 9 (SDK Contract Realization) is authorized under Authority Decision 11 and is realized by the pass-through SDK transport boundary in `sdk`.
+This plan is complete as a planning artifact, but it remains blocked wherever a required semantic authority is missing or contradictory. Phases 1-9 are complete in their reviewed implementation scopes, including Phase 9 under Authority Decision 11. Canonical lifecycle vocabulary is resolved by Authority Decision 1. Host execution remains outside this plan unless separately authorized. The SDK is realized by the pass-through transport boundary in `sdk`.
