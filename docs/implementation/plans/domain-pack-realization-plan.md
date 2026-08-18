@@ -2,13 +2,15 @@
 
 ## Status
 
-Conditional. This plan records the approved realization path for Domain Pack doctrine, but it is not certifiable because the manifest serialization choice is still unresolved.
+Conditional. Phases 1-4 are complete. This plan records the approved realization path for Domain Pack doctrine, but it is not certifiable because the manifest serialization choice is still unresolved.
 
 Phase status:
 
 - Phase 1: Complete. The Domain Pack candidate contract is attributable and flows through the existing semantic contract compilation and validation lifecycle.
 - Phase 2: Complete for the approved semantic-manifest scope. Manifest validation is integrated into SemanticIR validation and candidate compilation; Runtime operation and serialization decisions remain deferred.
-- Phases 3-5: Phase 3 is complete; later phases remain gated by the unresolved realization decisions recorded below.
+- Phase 3: Complete. Domain Pack evaluation uses the admitted generic Runtime `evaluate` path and typed adapter boundary.
+- Phase 4: Complete for the approved local JSON protocol envelope. The SDK carries ratified Runtime operations and results without interpreting semantics.
+- Phase 5: Not started; gated by the unresolved host and design decisions recorded below.
 
 ## 1. Desired State and Scope
 
@@ -238,6 +240,15 @@ Stop conditions
 - Any SDK change that invents a Domain Pack meaning.
 - Any protocol change that breaks the existing envelope without authority.
 
+Phase status
+
+Complete for the approved local JSON protocol envelope. The SDK exposes generic
+Runtime request and response envelope types, preserves `protocolVersion`,
+`requestId`, operation, context, payload, result, and failure reason fields,
+and delegates semantic validation to the injected Runtime protocol adapter.
+Focused SDK validation passed with 8 tests, typecheck, and build. Manifest
+serialization and storage remain outside this phase.
+
 ### Phase 5: Add Host-Side Installation, Discovery, and Presentation Around SDK Calls
 
 Objective
@@ -295,4 +306,4 @@ Stop conditions
 
 ## 8. Planning Status
 
-This plan is conditional, not certifiable. It can guide implementation sequencing, but it cannot declare completion until the unresolved manifest serialization decision is explicitly authorized.
+This plan is conditional, not certifiable. Phases 1-4 are complete, but it cannot declare completion until the unresolved manifest serialization decision is explicitly authorized.
