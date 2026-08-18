@@ -2,7 +2,13 @@
 
 ## Status
 
-Conditional. This plan records the approved realization path for Domain Pack doctrine, but it is not certifiable because the runtime operation shape and manifest serialization choices are still unresolved realization decisions.
+Conditional. This plan records the approved realization path for Domain Pack doctrine, but it is not certifiable because the manifest serialization choice is still unresolved.
+
+Phase status:
+
+- Phase 1: Complete. The Domain Pack candidate contract is attributable and flows through the existing semantic contract compilation and validation lifecycle.
+- Phase 2: Complete for the approved semantic-manifest scope. Manifest validation is integrated into SemanticIR validation and candidate compilation; Runtime operation and serialization decisions remain deferred.
+- Phases 3-5: Phase 3 is complete; later phases remain gated by the unresolved realization decisions recorded below.
 
 ## 1. Desired State and Scope
 
@@ -50,23 +56,21 @@ Current state facts:
 
 - The compiler currently compiles a pre-shaped SemanticIR and candidate semantic contract, but there is no Domain Pack-specific realization.
 - The Runtime boundary is pure, evaluate/produceDirective/recordEvidence oriented, and explicitly fail closed.
-- The SDK/host boundary is protocol-driven and host-owned, but it does not yet expose a Domain Pack operation.
+- The SDK/host boundary is protocol-driven and host-owned, and the current implementation routes Domain Pack evaluation through the admitted generic Runtime `evaluate` path and typed adapter boundary.
 - The VS Code host is a separate realization boundary and must not infer applicability or acceptance locally.
 
 ## 4. Gaps, Blockers, and Assumptions
 
 Gaps:
 
-- No Domain Pack runtime operation exists.
 - No Domain Pack manifest parser exists.
 - No SDK surface for Domain Pack operations exists.
 - No fixed manifest serialization/storage format has been ratified as the realization choice.
-- Runtime operation names and result fields for pack evaluation remain unresolved authority decisions.
 
 Blockers:
 
 - Host UI for packs requires an approved design before implementation.
-- Pack evaluation cannot proceed to transport or presentation until the Runtime operation shape is explicitly stated.
+- Pack evaluation can proceed through the approved generic Runtime `evaluate` path and typed adapter boundary, but transport and presentation remain gated until the manifest serialization choice is settled.
 - Serialization/storage cannot be treated as authoritative until the manifest format decision is settled.
 
 Assumptions:
@@ -116,6 +120,10 @@ Stop conditions
 - Any attempt to infer meaning not already ratified.
 - Any change that blurs candidate contract, acceptance, and applicability boundaries.
 
+Phase status
+
+Complete. Evidence is provided by `core/tests/compiler/domain-pack.test.ts`, covering attributable identity, version, scope, elements, provenance, candidate lifecycle, non-applicability, validation evidence, and fail-closed missing, malformed, absent, ambiguous, conflicting, and contradictory inputs. The current implementation also routes Domain Pack evaluation through the admitted generic Runtime `evaluate` path and typed adapter boundary, as evidenced by `core/tests/runtime/domain-pack-runtime.test.ts` and `core/src/runtime/domain-pack-runtime.ts`. Focused validation passed with 11 tests and core typecheck.
+
 ### Phase 2: Extend Compiler Validation and IR Surface Only Where Required by Doctrine
 
 Objective
@@ -154,6 +162,10 @@ Stop conditions
 
 - Any compiler change that adds unratified meaning.
 - Any attempt to normalize ambiguous doctrine into accepted doctrine without authority.
+
+Phase status
+
+Complete for the approved semantic-manifest scope. Evidence is provided by `core/src/compiler/domain-pack-manifest.ts`, its focused tests, and the SemanticIR integration. The implementation validates identity, version, provenance, compatibility, content class, terminology conflicts, and bundled-agent authority claims with deterministic `invalid`, `ambiguous`, and `unresolved` outcomes. Focused validation passed with 20 manifest/lifecycle tests, core typecheck, and focused lint.
 
 ### Phase 3: Define Runtime Contract Operations for Pack Evaluation and Evidence Recording
 
@@ -276,12 +288,11 @@ Stop conditions
 
 ## 7. Open Authority Decisions
 
-1. What exact Runtime operation names and result fields are authorized for pack evaluation.
-2. What manifest serialization and storage format is authorized as the realization choice.
-3. Whether manifest content-class checks are required for all pack cases or only specific ratified cases.
-4. Whether any host UI is required for the realization path, and if so, whether the design is approved.
-5. Which evidence artifact format is authoritative for candidate attribution and boundary non-reinterpretation proofs.
+1. What manifest serialization and storage format is authorized as the realization choice.
+2. Whether manifest content-class checks are required for all pack cases or only specific ratified cases.
+3. Whether any host UI is required for the realization path, and if so, whether the design is approved.
+4. Which evidence artifact format is authoritative for candidate attribution and boundary non-reinterpretation proofs.
 
 ## 8. Planning Status
 
-This plan is conditional, not certifiable. It can guide implementation sequencing, but it cannot declare completion until the unresolved Runtime operation shape and manifest serialization decision are explicitly authorized.
+This plan is conditional, not certifiable. It can guide implementation sequencing, but it cannot declare completion until the unresolved manifest serialization decision is explicitly authorized.

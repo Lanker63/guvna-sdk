@@ -8,6 +8,7 @@ import type {
 } from '../compiler/semantic-ir.js';
 import type { ApplicableSemanticContext } from './applicable-semantic-context.js';
 import { admitApplicableSemanticContext } from './applicable-semantic-context.js';
+import type { DomainPackManifest } from '../compiler/domain-pack-manifest.js';
 
 export interface RuntimeContractAttribution {
   contractIdentity: SemanticIdentity;
@@ -48,6 +49,9 @@ export interface RuntimeEvaluationInput {
   execution: RuntimeExecutionContext;
   authority: RuntimeAuthorityInput;
   provenance: RuntimeProvenanceInput;
+  manifest?: DomainPackManifest;
+  acceptedContent?: SemanticIdentity[];
+  compatibility?: 'compatible' | 'incompatible' | 'indeterminate';
 }
 
 export type RuntimeOperation =

@@ -101,10 +101,22 @@ const domainPackIR = {
   provenance: { records: [], conflicts: [] },
   compatibility: [],
 };
+const domainPackManifest = {
+  packIdentity,
+  packVersion: { value: '1.0.0', semanticIdentity: { identity: packIdentity }, scope: packScope },
+  targetGuvnaSemanticVersion: {
+    value: '1.0.0',
+    semanticIdentity: { identity: packIdentity },
+    scope: packScope,
+  },
+  contents: [{ identity: packIdentity, contentClass: 'skill' as const, provenance: [{ sourceIdentity: packIdentity }] }],
+  provenance: [{ sourceIdentity: packIdentity }],
+  compatibility: [],
+};
 
 describe('Domain Pack semantic contract realization', () => {
   it('compiles an attributable Domain Pack contract as a non-applicable candidate', () => {
-    const result = compileCandidateSemanticContract(domainPackIR);
+    const result = compileCandidateSemanticContract({ ...domainPackIR, domainPackManifest });
 
     expect(result.ok).toBe(true);
     if (!result.ok) return;
@@ -146,9 +158,55 @@ describe('Domain Pack semantic contract realization', () => {
   it.each([
     ['missing identity', { ...domainPackContract, identity: undefined }],
     ['malformed identity', { ...domainPackContract, identity: { identityKind: 'semantic' } }],
+    [
+      'version identity mismatch',
+      {
+        ...domainPackContract,
+        version: {
+          ...domainPackContract.version,
+          semanticIdentity: { identity: { identityKind: 'semantic', value: 'other-contract' } },
+        },
+      },
+    ],
+    [
+      'version scope mismatch',
+      {
+        ...domainPackContract,
+        version: {
+          ...domainPackContract.version,
+          scope: { ...packScope, identity: { identityKind: 'scope', value: 'other-scope' } },
+        },
+      },
+    ],
     ['missing provenance', { ...domainPackContract, provenance: undefined }],
   ])('fails closed for a Domain Pack with %s', (_reason, contract) => {
     const result = compileCandidateSemanticContract({ ...domainPackIR, contracts: [contract] });
+
+    expect(result.ok).toBe(false);
+    expect(result.stage).toBe('compilation');
+  });
+
+  it('fails closed for conflicting Domain Pack provenance', () => {
+    const result = compileCandidateSemanticContract({
+      ...domainPackIR,
+      provenance: {
+        records: [],
+        conflicts: [{ identity: packIdentity, claims: [], provenance: [] }],
+      },
+    });
+
+    expect(result.ok).toBe(false);
+    expect(result.stage).toBe('compilation');
+  });
+
+  it('fails closed for contradictory Domain Pack authority', () => {
+    const result = compileCandidateSemanticContract({
+      ...domainPackIR,
+      authorityContext: {
+        ...domainPackIR.authorityContext,
+        contradictions: [{ identity: packIdentity, claims: [], scope: packScope, provenance: [] }],
+      },
+    });
 
     expect(result.ok).toBe(false);
     expect(result.stage).toBe('compilation');
@@ -163,6 +221,19 @@ describe('Domain Pack semantic contract realization', () => {
     expect(result).toEqual({
       ok: false,
       reason: `Semantic Contract source is ${_reason}`,
+      stage: 'compilation',
+    });
+  });
+
+  it('fails closed when the supplied Domain Pack manifest is invalid', () => {
+    expect(
+      compileCandidateSemanticContract({
+        ...domainPackIR,
+        domainPackManifest: { ...domainPackManifest, contents: [{}] },
+      }),
+    ).toEqual({
+      ok: false,
+      reason: 'Domain Pack manifest is invalid: Domain Pack content identity is invalid',
       stage: 'compilation',
     });
   });

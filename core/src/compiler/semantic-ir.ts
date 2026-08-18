@@ -255,9 +255,11 @@ export interface SemanticIR {
   authorityContext: AuthorityAcceptanceContext;
   provenance: ProvenanceGraph;
   compatibility: CompatibilityRequirement[];
+  domainPackManifest?: unknown;
 }
 
 import { validateSemanticContractReferences } from './semantic-contract.js';
+import { validateDomainPackManifest } from './domain-pack-manifest.js';
 
 export type StructuralValidationResult = { valid: true } | { valid: false; reason: string };
 export type SemanticValidationResult =
@@ -281,7 +283,7 @@ const REQUIRED_IR_FIELDS = [
   'provenance',
   'compatibility',
 ];
-const OPTIONAL_IR_FIELDS = ['semanticVersion'];
+const OPTIONAL_IR_FIELDS = ['semanticVersion', 'domainPackManifest'];
 export const SEMANTIC_IR_FIELD_ORDER = [
   'irKind',
   'irVersion',
@@ -299,6 +301,7 @@ export const SEMANTIC_IR_FIELD_ORDER = [
   'authorityContext',
   'provenance',
   'compatibility',
+  'domainPackManifest',
 ];
 
 export function validateSemanticIR(value: unknown): SemanticIRValidationResult {
@@ -327,6 +330,11 @@ export function validateSemanticIRStructure(value: unknown): StructuralValidatio
     return invalid('SemanticIR shared fields are invalid');
   if ('semanticVersion' in value && !isSemanticVersion(value.semanticVersion))
     return invalid('SemanticIR semanticVersion is invalid');
+  if ('domainPackManifest' in value) {
+    const manifest = validateDomainPackManifest(value.domainPackManifest);
+    if (!manifest.valid)
+      return invalid(`Domain Pack manifest is ${manifest.status}: ${manifest.reason}`);
+  }
   if (
     !isArrayOf(value.concepts, isEntity) ||
     !isArrayOf(value.relationships, isRelationship) ||
