@@ -2,7 +2,7 @@
 
 ## Status
 
-Conditional. Phases 1-4 are complete. This plan records the approved realization path for Domain Pack doctrine, but it is not certifiable because the manifest serialization choice is still unresolved.
+Conditional. Phases 1-5 are complete. The manifest realization choice is approved as UTF-8 JSON stored under `.guvna/domain-packs/<pack-identity>/`. Phase 5 realizes the admitted opaque installation result and host persistence mechanics for the approved non-UI slice. Phase 6 is added as follow-up work for live external discovery transport execution; the plan remains conditional pending that work and any future presentation work.
 
 Phase status:
 
@@ -10,7 +10,8 @@ Phase status:
 - Phase 2: Complete for the approved semantic-manifest scope. Manifest validation is integrated into SemanticIR validation and candidate compilation; Runtime operation and serialization decisions remain deferred.
 - Phase 3: Complete. Domain Pack evaluation uses the admitted generic Runtime `evaluate` path and typed adapter boundary.
 - Phase 4: Complete for the approved local JSON protocol envelope. The SDK carries ratified Runtime operations and results without interpreting semantics.
-- Phase 5: Not started; gated by the unresolved host and design decisions recorded below.
+- Phase 5: Complete for the approved non-UI SDK/host contract, persistence, and lifecycle slice. The host delegates opaque Domain Pack discovery and installation requests through SDK admission, decodes the admitted installation result, persists the opaque manifest, and owns lifecycle/disposal wiring.
+- Phase 6: Not started. Live external discovery transport execution is follow-up work outside the current admitted boundary.
 
 ## 1. Desired State and Scope
 
@@ -66,20 +67,19 @@ Current state facts:
 Gaps:
 
 - No Domain Pack manifest parser exists.
-- No SDK surface for Domain Pack operations exists.
-- No fixed manifest serialization/storage format has been ratified as the realization choice.
+- Live discovery transport execution is not yet wired to an external provider.
 
 Blockers:
 
-- Host UI for packs requires an approved design before implementation.
-- Pack evaluation can proceed through the approved generic Runtime `evaluate` path and typed adapter boundary, but transport and presentation remain gated until the manifest serialization choice is settled.
-- Serialization/storage cannot be treated as authoritative until the manifest format decision is settled.
+- Host UI for packs requires an approved design before implementation; the approved Phase 5 scope remains non-UI.
+- Pack evaluation can proceed through the approved generic Runtime `evaluate` path and typed adapter boundary.
+- The UTF-8 JSON filesystem realization is approved and persists only an admitted opaque installation result; the host does not parse manifest meaning.
 
 Assumptions:
 
 - The plan follows the completed planning package as the source of truth.
 - No new semantic meaning is introduced beyond what is already ratified.
-- Any UI mention remains conditional on design approval.
+- Any UI mention remains excluded from the approved Phase 5 scope unless separately designed and approved.
 
 ## 5. Phased Plan
 
@@ -283,27 +283,97 @@ Stop conditions
 - Any host-local semantic inference.
 - Any UI implementation without approved design.
 
+Phase status
+
+Complete for the approved non-UI SDK/host contract, persistence, and
+lifecycle slice. The VS Code host exposes opaque `discoverDomainPacks` and
+`installDomainPack` request delegation through the admitted SDK boundary,
+decodes the admitted installation response, persists its opaque manifest under
+the approved filesystem path, and owns lifecycle/disposal wiring. Host tests
+prove missing context fails closed, payloads are preserved without local
+semantic interpretation, and traversal identities are rejected. Compile, lint,
+and VS Code integration tests passed with 12 tests. Live external discovery
+transport execution is out of scope for this slice and is carried forward as
+Phase 6.
+
+### Phase 6: Live External Discovery Transport Execution
+
+Objective
+
+Wire the already-defined host discovery and installation requests to a live
+external transport provider, without altering the admitted SDK/Runtime
+contract, persistence format, or authority boundary established in Phase 5.
+
+Inputs and prerequisites
+
+- Phase 5 output.
+- An authoritative decision on which external transport provider supplies
+  live discovery and installation execution (Open Authority Decision 1).
+- The existing admitted SDK request/result types and protocol envelope.
+
+Scope and concrete work items
+
+- Wire the host's opaque discovery request delegation to the designated live
+  external transport provider.
+- Preserve the existing admission, decoding, persistence, and lifecycle
+  behavior unchanged.
+- Do not introduce host-local applicability, acceptance, or semantic
+  inference as part of transport wiring.
+- Add only the transport-level error and retry handling needed to keep the
+  host boundary fail closed on transport failure.
+
+Validation and evidence
+
+- Tests proving live transport failures fail closed and do not fall back to
+  local inference.
+- Tests proving the admitted request/result contract is unchanged by the
+  transport wiring.
+- Evidence artifact showing host behavior remains limited to transport,
+  presentation, and lifecycle.
+
+Exit criteria
+
+- Live discovery and installation execution succeed through the designated
+  external transport provider using the existing admitted contract.
+- No change to SDK/Runtime semantics, persistence format, or authority
+  boundary.
+
+Stop conditions
+
+- Any attempt to select a transport provider without an authoritative
+  decision.
+- Any transport wiring that adds host-local semantic inference or bypasses
+  SDK admission.
+
+Phase status
+
+Not started. This phase is follow-up work pending Open Authority Decision 1.
+
 ## 6. Certification Matrix
 
-| Criterion | Phase 1 | Phase 2 | Phase 3 | Phase 4 | Phase 5 |
-| --- | --- | --- | --- | --- | --- |
-| Deterministic tests for missing/invalid identity | Required | Carry forward | Carry forward | Carry forward | Carry forward |
-| Deterministic tests for missing provenance | Required | Carry forward | Carry forward | Carry forward | Carry forward |
-| Deterministic tests for ambiguous classification | Required | Required | Carry forward | Carry forward | Carry forward |
-| Deterministic tests for conflicting accepted terms | Required | Required | Carry forward | Carry forward | Carry forward |
-| Deterministic tests for invalid bundled-agent authority assumptions | Required | Required | Carry forward | Carry forward | Carry forward |
-| Fail-closed behavior | Required | Required | Required | Required | Required |
-| Typecheck/test coverage for touched slice | Required | Required | Required | Required | Required |
-| Evidence that the candidate contract is attributable | Required | Carry forward | Carry forward | Carry forward | Carry forward |
-| Evidence that runtime/SDK/host boundaries do not reinterpret semantics | Not yet | Not yet | Required | Required | Required |
+| Criterion | Phase 1 | Phase 2 | Phase 3 | Phase 4 | Phase 5 | Phase 6 |
+| --- | --- | --- | --- | --- | --- | --- |
+| Deterministic tests for missing/invalid identity | Required | Carry forward | Carry forward | Carry forward | Carry forward | Carry forward |
+| Deterministic tests for missing provenance | Required | Carry forward | Carry forward | Carry forward | Carry forward | Carry forward |
+| Deterministic tests for ambiguous classification | Required | Required | Carry forward | Carry forward | Carry forward | Carry forward |
+| Deterministic tests for conflicting accepted terms | Required | Required | Carry forward | Carry forward | Carry forward | Carry forward |
+| Deterministic tests for invalid bundled-agent authority assumptions | Required | Required | Carry forward | Carry forward | Carry forward | Carry forward |
+| Fail-closed behavior | Required | Required | Required | Required | Required | Required |
+| Typecheck/test coverage for touched slice | Required | Required | Required | Required | Required | Required |
+| Evidence that the candidate contract is attributable | Required | Carry forward | Carry forward | Carry forward | Carry forward | Carry forward |
+| Evidence that runtime/SDK/host boundaries do not reinterpret semantics | Not yet | Not yet | Required | Required | Required | Required |
 
 ## 7. Open Authority Decisions
 
-1. What manifest serialization and storage format is authorized as the realization choice.
+1. What external transport provider supplies live discovery and installation execution for Phase 6.
 2. Whether manifest content-class checks are required for all pack cases or only specific ratified cases.
-3. Whether any host UI is required for the realization path, and if so, whether the design is approved.
+3. Whether any host UI is required for a future realization path; the current Phase 5 scope is explicitly non-UI.
 4. Which evidence artifact format is authoritative for candidate attribution and boundary non-reinterpretation proofs.
 
 ## 8. Planning Status
 
-This plan is conditional, not certifiable. Phases 1-4 are complete, but it cannot declare completion until the unresolved manifest serialization decision is explicitly authorized.
+This plan is conditional, not certifiable. Phases 1-5 are complete; Phase 5's
+approved non-UI SDK/host contract, persistence, and lifecycle slice is
+implemented. Phase 6 is added as follow-up work for live external discovery
+transport execution and is not started, pending Open Authority Decision 1; no
+UI work is included.
