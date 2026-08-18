@@ -1,6 +1,10 @@
 import { describe, expect, it } from 'vitest';
 import {
   decodeRuntimeOperation,
+  decodeRuntimeRequest,
+  encodeRuntimeFailureResponse,
+  encodeRuntimeRequest,
+  encodeRuntimeResponse,
   encodeRuntimeOperation,
   encodeRuntimeOperationResult,
   type RuntimeProtocolAdapter,
@@ -93,6 +97,53 @@ const adapter: RuntimeProtocolAdapter = {
 };
 
 describe('SDK Runtime transport', () => {
+  it('preserves the approved protocol request envelope', () => {
+    const encoded = encodeRuntimeRequest('request-1', context, operation, adapter);
+    expect(encoded).toEqual({
+      ok: true,
+      value: JSON.stringify({
+        protocolVersion: '1',
+        requestId: 'request-1',
+        operation: 'recordEvidence',
+        context,
+        payload: operation,
+      }),
+    });
+    expect(encoded.ok && decodeRuntimeRequest(context, encoded.value, adapter)).toEqual({
+      ok: true,
+      value: {
+        protocolVersion: '1',
+        requestId: 'request-1',
+        operation: 'recordEvidence',
+        context,
+        payload: operation,
+      },
+    });
+  });
+
+  it('preserves correlated successful and failed response envelopes', () => {
+    const result = { ok: true as const, value: operation };
+    expect(encodeRuntimeResponse('request-1', context, result, adapter)).toEqual({
+      ok: true,
+      value: JSON.stringify({ protocolVersion: '1', requestId: 'request-1', ok: true, payload: result }),
+    });
+    expect(encodeRuntimeFailureResponse('request-1', 'Runtime unavailable')).toEqual({
+      ok: true,
+      value: JSON.stringify({ protocolVersion: '1', requestId: 'request-1', ok: false, reason: 'Runtime unavailable' }),
+    });
+  });
+
+  it('rejects requests without correlation identifiers or with unsupported protocol versions', () => {
+    expect(encodeRuntimeRequest('', context, operation, adapter)).toEqual({
+      ok: false,
+      reason: 'SDK request identifier is missing',
+    });
+    expect(decodeRuntimeRequest(context, JSON.stringify({ protocolVersion: '2' }), adapter)).toEqual({
+      ok: false,
+      reason: 'SDK Runtime request envelope is invalid',
+    });
+  });
+
   it('uses the supplied runtime protocol adapter', () => {
     expect(encodeRuntimeOperation(context, operation, adapter)).toEqual({
       ok: true,
