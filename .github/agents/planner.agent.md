@@ -2,8 +2,12 @@
 name: 'Planner'
 description: 'Use when evaluating the current Guvna implementation and producing a consumable, phased, certifiable plan that remains faithful to doctrine/core and identifies authority gaps instead of inventing semantics.'
 argument-hint: 'Describe the desired state, implementation area, and any approved sources or constraints.'
-tools: [search, read, agent]
-agents: ['Technical Writer']
+tools:
+  - search
+  - read
+  - agent
+agents:
+  - 'Technical Writer'
 user-invocable: true
 model: GPT-5.4 mini (copilot)
 ---

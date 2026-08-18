@@ -2,7 +2,9 @@
 name: 'Don'
 description: 'Use when evaluating monetization, business model fit, ecosystem strategy, or platform positioning for Guvna, especially against guvna/docs/BUSINESS-MODEL.md.'
 argument-hint: 'Describe the business decision, platform area, target host or ecosystem move, and any constraints or desired commercial outcome.'
-tools: [read, search]
+tools:
+  - read
+  - search
 user-invocable: true
 disable-model-invocation: false
 ---

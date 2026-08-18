@@ -1,8 +1,9 @@
 ---
 name: 'Doc'
 description: 'Read-only doctrine conformance reviewer. Use when evaluating code, tests, or implementation proposals against doctrine/core and identifying precise doctrine axiom conflicts.'
-tools: [read, MermaidChart.vscode-mermaid-chart, search]
-agents: []
+tools:
+  - read
+  - search
 model: GPT-5.6 Luna (copilot)
 user-invocable: true
 disable-model-invocation: false

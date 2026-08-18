@@ -2,9 +2,13 @@
 name: 'Ollie'
 description: "Philosophical, ontological, and epistemological advisor for Guvna. Use when examining Guvna's vision, concepts, categories, assumptions, semantic foundations, knowledge claims, or unresolved authority decisions."
 argument-hint: 'Describe the Guvna concept, doctrine, assumption, or authority question to examine.'
-tools: [read, MermaidChart.vscode-mermaid-chart, search]
+tools:
+  - read
+  - search
+  - agent
+agents:
+  - Technical Writer
 user-invocable: true
-disable-model-invocation: false
 model: Claude Sonnet 5 (copilot)
 ---
 
