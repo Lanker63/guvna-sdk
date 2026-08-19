@@ -5,6 +5,9 @@ argument-hint: 'Describe the business decision, platform area, target host or ec
 tools:
   - read
   - search
+  - agent
+agents:
+  - Technical Writer
 user-invocable: true
 disable-model-invocation: false
 ---

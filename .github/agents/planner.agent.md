@@ -7,7 +7,12 @@ tools:
   - read
   - agent
 agents:
-  - 'Technical Writer'
+  - Technical Writer
+  - Platform Architect
+  - Martin
+  - Don
+  - Ollie
+  - Doc
 user-invocable: true
 model: GPT-5.4 mini (copilot)
 ---
