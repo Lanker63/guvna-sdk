@@ -5,16 +5,17 @@ argument-hint: 'Describe the platform concern, target audience, hosting environm
 tools:
   - read
   - search
-  - edit
-  - execute
   - web
   - todo
   - agent
   - 'com.figma.mcp/mcp/*'
+  - MermaidChart.vscode-mermaid-chart
 agents:
   - Martin
   - Technical Writer
   - Planner
+  - Platform Engineer
+  - Jay
 user-invocable: true
 model: GPT-5.6 Luna (copilot)
 ---
