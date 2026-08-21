@@ -9,6 +9,19 @@ import {
   encodeRuntimeResponse,
   encodeRuntimeOperation,
   encodeRuntimeOperationResult,
+  decodeAcceptanceRecord,
+  encodeAcceptanceRecord,
+  decodeAcceptanceRecordDiscoveryResponse,
+  authorityTransportContractVersion,
+  decodeConfirmRepositoryAuthorityRequest,
+  encodeConfirmRepositoryAuthorityRequest,
+  decodeRevalidateAuthorityRequest,
+  encodeRevalidateAuthorityRequest,
+  decodeAuthorityFreshnessResponse,
+  encodeAuthorityFreshnessResponse,
+  decodeSubmitAcceptanceDecisionRequest,
+  encodeSubmitAcceptanceDecisionRequest,
+  encodeAcceptanceRecordDiscoveryResponse,
   type RuntimeProtocolAdapter,
 } from '../src/index.js';
 
@@ -99,6 +112,96 @@ const adapter: RuntimeProtocolAdapter = {
 };
 
 describe('SDK Runtime transport', () => {
+  it('round-trips a candidate response using acceptance records', () => {
+    const record = {
+      acceptanceRecordId: '550e8400-e29b-41d4-a716-446655440000',
+      contractVersion: '1.0.0',
+      governedRepositoryId: 'guvna-core',
+      subjectKind: 'single-artifact' as const,
+      subjectIdentity: 'authority-model',
+      status: 'candidate' as const,
+      authorityContext: {
+        principalId: 'principal-1', governedRepositoryId: 'guvna-core',
+        authorityScope: 'repository', verifiedAt: '2026-08-20T00:00:00Z',
+      },
+      candidateStatementIdentity: 'candidate-authority-model',
+      evidenceIdentities: [],
+    };
+    const encoded = encodeAcceptanceRecordDiscoveryResponse({
+      contractVersion: '1', governedRepositoryId: 'guvna-core', records: [record],
+    });
+    expect(encoded.ok && decodeAcceptanceRecordDiscoveryResponse(encoded.value)).toEqual({
+      ok: true,
+      value: { contractVersion: '1', governedRepositoryId: 'guvna-core', records: [record] },
+    });
+  });
+
+  it('rejects candidate responses with invalid records or repository scope', () => {
+    const record = {
+      acceptanceRecordId: '550e8400-e29b-41d4-a716-446655440000',
+      contractVersion: '1.0.0', governedRepositoryId: 'guvna-core',
+      subjectKind: 'single-artifact' as const, subjectIdentity: 'authority-model',
+      status: 'candidate' as const, authorityContext: {
+        principalId: 'principal-1', governedRepositoryId: 'guvna-core',
+        authorityScope: 'repository', verifiedAt: '2026-08-20T00:00:00Z',
+      }, candidateStatementIdentity: 'candidate-authority-model', evidenceIdentities: [],
+    };
+    expect(encodeAcceptanceRecordDiscoveryResponse({
+      contractVersion: '1', governedRepositoryId: 'guvna-core', records: [record],
+    }).ok).toBe(true);
+    expect(decodeAcceptanceRecordDiscoveryResponse(JSON.stringify({
+      contractVersion: '1', governedRepositoryId: 'guvna-core', records: [{ ...record, status: 'unknown' }],
+    }))).toEqual({ ok: false, reason: 'SDK acceptance record discovery response is invalid' });
+    expect(decodeAcceptanceRecordDiscoveryResponse(JSON.stringify({
+      contractVersion: '1', governedRepositoryId: 'guvna-core', records: [{ ...record, governedRepositoryId: 'other-repository' }],
+    }))).toEqual({ ok: false, reason: 'SDK acceptance record discovery response is invalid' });
+  });
+
+  it('round-trips an acceptance record without changing its provenance fields', () => {
+    const record = {
+      acceptanceRecordId: '550e8400-e29b-41d4-a716-446655440000',
+      contractVersion: '1.0.0',
+      governedRepositoryId: 'guvna-core',
+      subjectKind: 'change-set' as const,
+      subjectIdentity: 'runtime-authority-refresh',
+      status: 'accepted' as const,
+      authorityContext: {
+        principalId: 'principal-1', governedRepositoryId: 'guvna-core',
+        authorityScope: 'repository', verifiedAt: '2026-08-20T00:00:00Z',
+      },
+      candidateStatementIdentity: 'candidate-runtime-authority-refresh',
+      evidenceIdentities: ['evidence-1'],
+      fileManifest: [{ path: 'src/runtime.ts', changeKind: 'updated' as const, contentHash: `sha256:${'a'.repeat(64)}` }],
+    };
+    const encoded = encodeAcceptanceRecord(record);
+    expect(encoded.ok && decodeAcceptanceRecord(encoded.value)).toEqual({ ok: true, value: record });
+  });
+
+  it('rejects malformed acceptance-record JSON and structure', () => {
+    expect(decodeAcceptanceRecord('{')).toEqual({ ok: false, reason: 'SDK protocol payload is invalid JSON' });
+    expect(decodeAcceptanceRecord(JSON.stringify({ status: 'accepted' }))).toEqual({
+      ok: false, reason: 'SDK acceptance record is invalid',
+    });
+    const record = {
+      acceptanceRecordId: '550e8400-e29b-41d4-a716-446655440000',
+      contractVersion: '1.0.0', governedRepositoryId: 'guvna-core',
+      subjectKind: 'single-artifact' as const, subjectIdentity: 'authority-model',
+      status: 'candidate' as const, authorityContext: {
+        principalId: 'principal-1', governedRepositoryId: 'guvna-core',
+        authorityScope: 'repository', verifiedAt: '2026-08-20T00:00:00Z',
+      }, candidateStatementIdentity: 'candidate-authority-model', evidenceIdentities: [],
+    };
+    expect(encodeAcceptanceRecord({ ...record, acceptanceRecordId: 'not-a-uuid' })).toEqual({
+      ok: false, reason: 'SDK acceptance record is invalid',
+    });
+    expect(decodeAcceptanceRecord(JSON.stringify({ ...record, subjectIdentity: '123' }))).toEqual({
+      ok: false, reason: 'SDK acceptance record is invalid',
+    });
+    expect(decodeAcceptanceRecord(JSON.stringify({
+      ...record, authorityContext: { ...record.authorityContext, governedRepositoryId: 'other-repository' },
+    }))).toEqual({ ok: false, reason: 'SDK acceptance record is invalid' });
+  });
+
   it('encodes opaque Domain Pack host requests without interpreting payloads', () => {
     const payload = { source: 'approved-source', manifest: { opaque: true } };
     expect(encodeDomainPackRequest('request-1', 'discoverDomainPacks', context, payload, adapter)).toEqual({
@@ -216,5 +319,108 @@ describe('SDK Runtime transport', () => {
       ok: false,
       reason: 'Runtime operation structure is invalid',
     });
+  });
+});
+
+describe('SDK Repository Authority freshness and acceptance-decision transport', () => {
+  const authorityContext = {
+    principalId: 'principal-1',
+    governedRepositoryId: 'guvna-core',
+    authorityScope: 'repository',
+    verifiedAt: '2026-08-20T00:00:00Z',
+  };
+
+  it('round-trips a confirmRepositoryAuthority request', () => {
+    const request = {
+      contractVersion: authorityTransportContractVersion,
+      principalId: 'principal-1',
+      governedRepositoryId: 'guvna-core',
+    };
+    const encoded = encodeConfirmRepositoryAuthorityRequest(request);
+    expect(encoded.ok && decodeConfirmRepositoryAuthorityRequest(encoded.value)).toEqual({ ok: true, value: request });
+  });
+
+  it('fails closed on an unknown confirmRepositoryAuthority contract version', () => {
+    expect(encodeConfirmRepositoryAuthorityRequest({
+      contractVersion: '2' as never, principalId: 'principal-1', governedRepositoryId: 'guvna-core',
+    })).toEqual({ ok: false, reason: 'SDK confirmRepositoryAuthority request is invalid' });
+  });
+
+  it('round-trips a revalidateAuthority request', () => {
+    const request = {
+      contractVersion: authorityTransportContractVersion,
+      principalId: 'principal-1',
+      governedRepositoryId: 'guvna-core',
+      snapshotObservedAt: '2026-08-20T00:00:00Z',
+    };
+    const encoded = encodeRevalidateAuthorityRequest(request);
+    expect(encoded.ok && decodeRevalidateAuthorityRequest(encoded.value)).toEqual({ ok: true, value: request });
+  });
+
+  it('rejects malformed revalidateAuthority JSON', () => {
+    expect(decodeRevalidateAuthorityRequest('{')).toEqual({ ok: false, reason: 'SDK protocol payload is invalid JSON' });
+  });
+
+  it('round-trips each supported authority freshness response status', () => {
+    for (const status of ['fresh', 'stale', 'revoked', 'indeterminate'] as const) {
+      const response = {
+        contractVersion: authorityTransportContractVersion,
+        principalId: 'principal-1',
+        governedRepositoryId: 'guvna-core',
+        status,
+        observedAt: '2026-08-20T00:00:00Z',
+      };
+      const encoded = encodeAuthorityFreshnessResponse(response);
+      expect(encoded.ok && decodeAuthorityFreshnessResponse(encoded.value)).toEqual({ ok: true, value: response });
+    }
+  });
+
+  it('fails closed on an unsupported authority freshness status', () => {
+    expect(encodeAuthorityFreshnessResponse({
+      contractVersion: authorityTransportContractVersion, principalId: 'principal-1',
+      governedRepositoryId: 'guvna-core', status: 'unknown' as never, observedAt: '2026-08-20T00:00:00Z',
+    })).toEqual({ ok: false, reason: 'SDK authority freshness response is invalid' });
+  });
+
+  it('round-trips an accepted and a rejected submitAcceptanceDecision request with fresh authority', () => {
+    for (const decision of ['accepted', 'rejected'] as const) {
+      const request = {
+        contractVersion: authorityTransportContractVersion,
+        acceptanceRecordId: '550e8400-e29b-41d4-a716-446655440000',
+        decision,
+        authorityContext,
+        freshnessStatus: 'fresh' as const,
+        decidedAt: '2026-08-20T00:00:00Z',
+      };
+      const encoded = encodeSubmitAcceptanceDecisionRequest(request);
+      expect(encoded.ok && decodeSubmitAcceptanceDecisionRequest(encoded.value)).toEqual({ ok: true, value: request });
+    }
+  });
+
+  it('fails closed on submitAcceptanceDecision when freshness is not fresh', () => {
+    for (const freshnessStatus of ['stale', 'revoked', 'indeterminate'] as const) {
+      expect(encodeSubmitAcceptanceDecisionRequest({
+        contractVersion: authorityTransportContractVersion,
+        acceptanceRecordId: '550e8400-e29b-41d4-a716-446655440000',
+        decision: 'accepted', authorityContext, freshnessStatus, decidedAt: '2026-08-20T00:00:00Z',
+      })).toEqual({ ok: false, reason: 'SDK submitAcceptanceDecision request is invalid' });
+    }
+  });
+
+  it('fails closed on submitAcceptanceDecision with an unknown contract version or malformed authority context', () => {
+    const request = {
+      contractVersion: authorityTransportContractVersion,
+      acceptanceRecordId: '550e8400-e29b-41d4-a716-446655440000',
+      decision: 'accepted' as const,
+      authorityContext,
+      freshnessStatus: 'fresh' as const,
+      decidedAt: '2026-08-20T00:00:00Z',
+    };
+    expect(encodeSubmitAcceptanceDecisionRequest({ ...request, contractVersion: '2' as never })).toEqual({
+      ok: false, reason: 'SDK submitAcceptanceDecision request is invalid',
+    });
+    expect(decodeSubmitAcceptanceDecisionRequest(JSON.stringify({
+      ...request, authorityContext: { ...authorityContext, verifiedAt: undefined },
+    }))).toEqual({ ok: false, reason: 'SDK submitAcceptanceDecision request is invalid' });
   });
 });

@@ -1,5 +1,24 @@
 # Changelog
 
+## 0.5.1
+
+- Publish the acceptance-record discovery response codecs added for host
+	candidate presentation.
+
+## 0.5.0
+
+- Add repository-scoped acceptance-record discovery response types and
+	fail-closed codecs.
+
+## 0.4.0
+
+- Add versioned authority freshness and acceptance-decision transport operations.
+
+## 0.3.0
+
+- Add versioned acceptance-record transport types and codecs.
+- Validate repository-scoped authority context and change-set manifests.
+
 ## 0.2.1
 
 - Add opaque Domain Pack installation response decoding.
