@@ -860,6 +860,18 @@ including a delegated agent.
 
 ---
 
+# Invariant 28a — Repository Authority Scope Is Repository-Bound
+
+Repository Authority exists only within the Governed Repository for which it has been established. No default cross-repository authority exists. An organization-wide authority relationship is valid only where each affected Governed Repository's Authority Model explicitly recognizes that relationship.
+
+---
+
+# Invariant 28b — Revocation Affects Only Future Acceptance
+
+Revocation of a principal's Repository Authority SHALL invalidate that principal's capacity for future Authority Decisions and Acceptance within the affected Governed Repository. Revocation SHALL NOT retroactively invalidate previously established Acceptance or previously accepted Repository Knowledge. Reversal of previously accepted knowledge requires a separate, explicit supersession process.
+
+---
+
 # Invariant 29 — Acceptance Is Not Implementation State
 
 The following SHALL NOT be treated as equivalent to repository Acceptance:
@@ -1454,6 +1466,12 @@ It does not establish:
 - or Repository Truth.
 
 Resolution and authority SHALL remain distinct.
+
+---
+
+# Invariant 59a — Authority Freshness Precedes Acceptance
+
+Before an Acceptance transition is finalized, the Runtime boundary SHALL revalidate that the acting principal currently holds Repository Authority for the affected Governed Repository. A stale or cached authority state SHALL NOT be treated as sufficient for Acceptance. Where revalidation cannot be performed or fails, Acceptance SHALL fail closed; recommendation and candidate generation MAY still proceed as non-authoritative activity.
 
 ---
 

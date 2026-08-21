@@ -404,6 +404,16 @@ Acceptance is the transition that establishes accepted repository-specific truth
 
 ---
 
+## Repository Authority Is Human
+
+Repository Authority is realized only by a human principal, identified through an applicable authentication and authority-resolution surface external to Guvna Core.
+
+A delegated agent MAY act under Repository Authority's explicit, scoped authorization. A delegated agent SHALL NOT itself constitute Repository Authority.
+
+Authentication of a human principal is distinct from, and does not by itself establish, Repository Authority. Authority is established only by the applicable repository-specific recognition of that principal within a Governed Repository's Authority Context.
+
+---
+
 ## Acceptance Provenance
 
 Acceptance Provenance records how accepted Repository Knowledge was established.
@@ -442,6 +452,17 @@ Acceptance Provenance SHALL remain distinct from the accepted knowledge itself.
 It establishes lineage.
 
 It does not independently establish authority.
+
+---
+
+## Acceptance Granularity
+
+Acceptance SHALL apply at one of two granularities, determined by the nature of the subject:
+
+- Single-artifact acceptance: applies to a single Guvna-generated Candidate Statement or artifact (for example, an ADR, PRD, RFC, spec, or plan) carrying its own semantic identity.
+- Change-set acceptance: applies collectively to a set of repository realization mutations performed against a previously accepted plan or spec, where the mutations are accepted or rejected as one governed unit.
+
+The applicable granularity SHALL be determined by the artifact or work's semantic identity and kind, not by Host convenience or transport batching.
 
 ---
 
@@ -561,6 +582,19 @@ Projection
 These states describe semantic status.
 
 They are not required to correspond one-to-one with UI screens.
+
+---
+
+# Acceptance Lifecycle Vocabulary
+
+The contract SHALL recognize the following statuses for a Candidate Statement or realization change set:
+
+- candidate: proposed, not yet decided;
+- accepted: Repository Authority has completed the Acceptance transition;
+- rejected: Repository Authority has declined the Candidate Statement;
+- superseded: a previously accepted status has been replaced by a later accepted status for the same semantic subject.
+
+These four statuses are the minimum required vocabulary. A Host Implementation SHALL NOT introduce a competing status vocabulary for the same semantic subject.
 
 ---
 

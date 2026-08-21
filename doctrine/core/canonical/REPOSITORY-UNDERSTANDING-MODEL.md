@@ -498,10 +498,11 @@ Operating Model answers:
 
 # Authority Model
 
-Authority Model defines who or what may authoritatively make repository-specific decisions.
+Authority Model defines which human principals may authoritatively make repository-specific decisions.
 
-Repository Authority MAY be exercised by a human or by an authorized
-non-human authority, including an explicitly delegated agent.
+Repository Authority MAY be exercised only by a human principal. An
+explicitly delegated agent may act within delegated scope, but does not
+constitute Repository Authority.
 
 The Authority Model SHALL identify the authority subject, applicable scope,
 permitted decisions, delegation relationship where applicable, and
@@ -536,9 +537,12 @@ The Authority Model establishes repository-specific authority context.
 
 It does not override Guvna constitutional authority over Guvna-owned semantics.
 
-Fully agentic governance is a valid Repository Governance configuration
-when Repository Authority has been explicitly delegated to an authorized
-agent within a declared scope and subject to applicable constraints.
+Agent-assisted governance is a valid Repository Governance configuration
+when a human Repository Authority explicitly delegates action to an agent
+within a declared scope and subject to applicable constraints. Delegation
+does not transfer Repository Authority.
+
+Where Repository Authority is realized by a human principal, that principal's identity is established by an authentication surface external to this repository's Authority Model; the Authority Model governs only which authenticated principals hold Repository Authority within this Governed Repository, and with what scope.
 
 ---
 

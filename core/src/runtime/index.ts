@@ -3,3 +3,6 @@ export * from './canonical-semantic-contract-adapter.js';
 export * from './runtime-contract.js';
 export * from './runtime-semantics.js';
 export * from './domain-pack-runtime.js';
+export * from './authority-freshness.js';
+export * from './authority-decision-ledger.js';
+export * from './authority-transport-operations.js';
