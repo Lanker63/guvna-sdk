@@ -10,3 +10,5 @@ export * from './domain-pack-entitlement.js';
 export * from './domain-pack-artifact.js';
 export * from './domain-pack-entitlement-service.js';
 export * from './domain-pack-use.js';
+export * from './runtime-gateway.js';
+export * from './runtime-operation-factory.js';

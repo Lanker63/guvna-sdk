@@ -1,0 +1,23 @@
+{
+  "name": "@guvna/runtime-gateway-host",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "main": "dist/src/server.js",
+  "types": "dist/src/server.d.ts",
+  "scripts": {
+    "build": "tsc -p tsconfig.json",
+    "typecheck": "tsc -p tsconfig.json --noEmit",
+    "test": "vitest run",
+    "start": "node dist/src/start.js"
+  },
+  "dependencies": {
+    "@guvna/core": "workspace:*",
+    "@guvna/sdk": "workspace:*"
+  },
+  "devDependencies": {
+    "@types/node": "^24.3.0",
+    "vitest": "^2.1.5",
+    "typescript": "^5.8.3"
+  }
+}

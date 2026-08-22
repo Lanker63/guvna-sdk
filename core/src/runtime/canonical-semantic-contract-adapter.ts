@@ -7,7 +7,6 @@ import {
 import type {
   RuntimeDirective,
   RuntimeEvaluationInput,
-  RuntimeEvaluationResult,
   RuntimeFailure,
   RuntimeNoDirective,
   RuntimeSemanticEvidence,

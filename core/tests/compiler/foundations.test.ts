@@ -1,9 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { evaluateCompatibility } from '../../src/compiler/compatibility.js';
-import {
-  evaluateLifecycle,
-  ratifyValidatedContract,
-} from '../../src/compiler/contract-lifecycle.js';
+import { evaluateLifecycle } from '../../src/compiler/contract-lifecycle.js';
 import { createIdentity } from '../../src/compiler/ir-identity.js';
 import { serializeCompactJson, serializeSemanticIR } from '../../src/compiler/ir-serializer.js';
 import { appendProvenance, preserveProvenance } from '../../src/compiler/provenance.js';
