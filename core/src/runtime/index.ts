@@ -6,3 +6,7 @@ export * from './domain-pack-runtime.js';
 export * from './authority-freshness.js';
 export * from './authority-decision-ledger.js';
 export * from './authority-transport-operations.js';
+export * from './domain-pack-entitlement.js';
+export * from './domain-pack-artifact.js';
+export * from './domain-pack-entitlement-service.js';
+export * from './domain-pack-use.js';

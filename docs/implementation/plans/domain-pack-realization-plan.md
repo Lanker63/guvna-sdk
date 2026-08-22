@@ -2,6 +2,11 @@
 
 ## Status
 
+**Superseded (2026-08-21).** Phase 6 outstanding work is consolidated into
+[consolidated-outstanding-work-plan.md](consolidated-outstanding-work-plan.md).
+This document is retained for the completed Phase 1-5 record; it is no
+longer tracked independently.
+
 Conditional. Phases 1-5 are complete. The manifest realization choice is approved as UTF-8 JSON stored under `.guvna/domain-packs/<pack-identity>/`. Phase 5 realizes the admitted opaque installation result and host persistence mechanics for the approved non-UI slice. Phase 6 is added as follow-up work for live external discovery transport execution; the plan remains conditional pending that work and any future presentation work.
 
 Phase status:

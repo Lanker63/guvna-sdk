@@ -2,6 +2,11 @@
 
 ## Status
 
+**Superseded (2026-08-21).** Phase 2-5 outstanding work is consolidated into
+[consolidated-outstanding-work-plan.md](consolidated-outstanding-work-plan.md).
+This document is retained for the completed Phase 1 record and full phase
+definitions; it is no longer tracked independently.
+
 Implementation plan. Phase 1 delivery and protocol direction is approved and
 recorded in [core-sdk-runtime-protocol.md](./core-sdk-runtime-protocol.md).
 This plan is not doctrine and does not define or reinterpret Guvna semantics.

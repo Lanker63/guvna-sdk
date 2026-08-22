@@ -2,6 +2,11 @@
 
 ## Status
 
+**Superseded (2026-08-21).** Outstanding work is consolidated into
+[consolidated-outstanding-work-plan.md](consolidated-outstanding-work-plan.md).
+This document is retained for its design proposal and requirement ledger
+content; it is no longer tracked independently.
+
 Conditional. No phase has started. This plan designs a proposed technical
 mechanism for Domain Pack license entitlement enforcement; it has not been
 through formal architectural approval. Nothing in this plan is implemented.
