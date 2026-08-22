@@ -1,5 +1,22 @@
 # Changelog
 
+## 0.8.0
+
+- Add adapter-free Runtime operation request encoding and result receipt.
+- Preserve request correlation and fail closed for malformed remote results.
+
+## 0.7.0
+
+- Add the distinct adapter-free `receiveRuntimeAdmissionDecision` API for
+	Core-backed Runtime admission responses.
+- Require and preserve validated projection provenance for remote admission.
+
+## 0.6.0
+
+- Add asynchronous Runtime admission transport with request correlation.
+- Preserve and validate projection freshness and provenance in admission responses.
+- Add a distinct adapter-free receiver for Core-backed Runtime admission decisions.
+
 ## 0.5.1
 
 - Publish the acceptance-record discovery response codecs added for host

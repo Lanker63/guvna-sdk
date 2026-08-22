@@ -21,6 +21,10 @@ import {
   encodeAuthorityFreshnessResponse,
   decodeSubmitAcceptanceDecisionRequest,
   encodeSubmitAcceptanceDecisionRequest,
+  requestApplicableSemanticContext,
+  receiveRuntimeAdmissionDecision,
+  receiveRuntimeOperationResult,
+  encodeRuntimeOperationRequest,
   encodeAcceptanceRecordDiscoveryResponse,
   type RuntimeProtocolAdapter,
 } from '../src/index.js';
@@ -112,6 +116,90 @@ const adapter: RuntimeProtocolAdapter = {
 };
 
 describe('SDK Runtime transport', () => {
+
+  it('encodes an adapter-free Runtime operation request and receives its result', async () => {
+    const encoded = encodeRuntimeOperationRequest('operation-1', context, operation);
+    expect(encoded.ok).toBe(true);
+    const result = await receiveRuntimeOperationResult(JSON.parse(encoded.ok ? encoded.value : '{}'), 'operation-1', {
+      send: async () => JSON.stringify({ protocolVersion: '1', requestId: 'operation-1', ok: true, payload: { ok: true, value: {} } }),
+    });
+    expect(result).toEqual({ ok: true, result: { ok: true, value: {} } });
+  });
+
+  it('fails closed for malformed or refused remote Runtime results', async () => {
+    const malformed = await receiveRuntimeOperationResult({}, 'operation-2', {
+      send: async () => JSON.stringify({ protocolVersion: '1', requestId: 'other', ok: true, payload: {} }),
+    });
+    const refused = await receiveRuntimeOperationResult({}, 'operation-3', {
+      send: async () => JSON.stringify({ protocolVersion: '1', requestId: 'operation-3', ok: false, reason: 'invalid input' }),
+    });
+    expect(malformed).toEqual({ ok: false, reason: 'SDK Runtime operation response is invalid' });
+    expect(refused).toEqual({ ok: false, reason: 'invalid input' });
+  });
+
+  it('receives a Core-backed admission decision without a local semantic adapter', async () => {
+    const result = await receiveRuntimeAdmissionDecision({}, 'admission-remote-1', {
+      send: async () => JSON.stringify({
+        protocolVersion: '1', requestId: 'admission-remote-1', ok: true, payload: context,
+        provenance: {
+          governedRepositoryIdentity: { identityKind: 'repository', value: 'repo-1' },
+          projectionIdentity: { identityKind: 'projection', value: 'projection-1' },
+          projectionVersion: '1.0.0', compiledAt: '2026-08-22T00:00:00Z',
+          freshness: { status: 'current', checkedAt: '2026-08-22T00:00:00Z', currentProjectionVersion: '1.0.0' },
+        },
+      }),
+    });
+    expect(result.ok).toBe(true);
+  });
+
+  it('requests admission and validates the returned context through the adapter', async () => {
+    const calls: string[] = [];
+    const transport = {
+      send: async (payload: string) => {
+        calls.push(payload);
+        return JSON.stringify({
+          protocolVersion: '1', requestId: 'admission-1', ok: true, payload: context,
+          provenance: {
+            governedRepositoryIdentity: { identityKind: 'repository', value: 'repo-1' },
+            projectionIdentity: { identityKind: 'projection', value: 'projection-1' },
+            projectionVersion: '1.0.0', compiledAt: '2026-08-22T00:00:00Z',
+            freshness: { status: 'current', checkedAt: '2026-08-22T00:00:00Z', currentProjectionVersion: '1.0.0' },
+          },
+        });
+      },
+    };
+    const result = await requestApplicableSemanticContext({ contractIdentity: identity, contractVersion: '1.0.0', scope: scope.identity }, 'admission-1', transport, adapter);
+
+    expect(result).toEqual({
+      ok: true,
+      context,
+      provenance: {
+        governedRepositoryIdentity: { identityKind: 'repository', value: 'repo-1' },
+        projectionIdentity: { identityKind: 'projection', value: 'projection-1' },
+        projectionVersion: '1.0.0', compiledAt: '2026-08-22T00:00:00Z',
+        freshness: { status: 'current', checkedAt: '2026-08-22T00:00:00Z', currentProjectionVersion: '1.0.0' },
+      },
+    });
+    expect(JSON.parse(calls[0])).toEqual({
+      protocolVersion: '1',
+      requestId: 'admission-1',
+      operation: 'admitApplicableSemanticContext',
+      payload: { contractIdentity: identity, contractVersion: '1.0.0', scope: scope.identity },
+    });
+  });
+
+  it('fails closed on refusal and mismatched admission responses', async () => {
+    const refusal = await requestApplicableSemanticContext({}, 'admission-1', {
+      send: async () => JSON.stringify({ protocolVersion: '1', requestId: 'admission-1', ok: false, reason: 'No applicable contract' }),
+    }, adapter);
+    expect(refusal).toEqual({ ok: false, reason: 'No applicable contract' });
+
+    const mismatch = await requestApplicableSemanticContext({}, 'admission-1', {
+      send: async () => JSON.stringify({ protocolVersion: '1', requestId: 'other', ok: true, payload: context }),
+    }, adapter);
+    expect(mismatch).toEqual({ ok: false, reason: 'SDK admission response is invalid' });
+  });
+
   it('round-trips a candidate response using acceptance records', () => {
     const record = {
       acceptanceRecordId: '550e8400-e29b-41d4-a716-446655440000',

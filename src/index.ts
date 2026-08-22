@@ -54,7 +54,11 @@ export interface RuntimeProtocolAdapter {
 }
 
 export type SdkAdmissionResult =
-  | { ok: true; context: ApplicableSemanticContext }
+  | { ok: true; context: ApplicableSemanticContext; provenance?: RuntimeAdmissionProvenance }
+  | { ok: false; reason: string };
+
+export type RemoteAdmissionResult =
+  | { ok: true; context: ApplicableSemanticContext; provenance: RuntimeAdmissionProvenance }
   | { ok: false; reason: string };
 
 export type SdkTransportResult<T> =
@@ -68,6 +72,44 @@ export interface RuntimeProtocolRequest {
   context: ApplicableSemanticContext;
   payload: RuntimeOperation;
 }
+export interface RuntimeTransport {
+  send(payload: string, signal?: AbortSignal): Promise<string>;
+}
+
+export interface RuntimeAdmissionRequest {
+  protocolVersion: '1';
+  requestId: string;
+  operation: 'admitApplicableSemanticContext';
+  payload: unknown;
+}
+
+export interface RuntimeAdmissionResponse {
+  protocolVersion: '1';
+  requestId: string;
+  ok: true;
+  payload: ApplicableSemanticContext;
+  provenance?: RuntimeAdmissionProvenance;
+}
+
+export interface RuntimeAdmissionProvenance {
+  governedRepositoryIdentity: { identityKind: string; value: string };
+  projectionIdentity: { identityKind: string; value: string };
+  projectionVersion: string;
+  compiledAt: string;
+  freshness: {
+    status: 'current' | 'superseded' | 'revoked' | 'unknown';
+    checkedAt: string;
+    currentProjectionVersion?: string;
+    verifiedBy?: { identityKind: string; value: string };
+  };
+}
+
+export interface RuntimeAdmissionFailureResponse {
+  protocolVersion: '1';
+  requestId: string;
+  ok: false;
+  reason: string;
+}
 
 export interface RuntimeProtocolResponse {
   protocolVersion: '1';
@@ -75,6 +117,10 @@ export interface RuntimeProtocolResponse {
   ok: true;
   payload: RuntimeOperationResult;
 }
+
+export type RemoteRuntimeOperationResult =
+  | { ok: true; result: RuntimeOperationResult }
+  | { ok: false; reason: string };
 
 export interface RuntimeProtocolFailureResponse {
   protocolVersion: '1';
@@ -247,6 +293,18 @@ function parseJson(payload: string): SdkTransportResult<unknown> {
   } catch {
     return { ok: false, reason: 'SDK protocol payload is invalid JSON' };
   }
+}
+
+function isObject(value: unknown): value is Record<string, unknown> {
+  return typeof value === 'object' && value !== null && !Array.isArray(value);
+}
+
+function isRuntimeOperationShape(value: unknown): value is RuntimeOperation {
+  return isObject(value) && (value.operationKind === 'evaluate' || value.operationKind === 'produceDirective' || value.operationKind === 'recordEvidence');
+}
+
+function isRuntimeOperationResultShape(value: unknown): value is RuntimeOperationResult {
+  return isObject(value) && typeof value.ok === 'boolean' && (value.ok ? 'value' in value : 'failure' in value);
 }
 
 function isRequestEnvelope(value: unknown): value is RuntimeProtocolRequest {
@@ -505,6 +563,98 @@ export function admitSdkContext(
   return adapter.admitContext(context);
 }
 
+export async function requestApplicableSemanticContext(
+  request: unknown,
+  requestId: string,
+  transport: RuntimeTransport,
+  adapter: RuntimeProtocolAdapter,
+  signal?: AbortSignal,
+): Promise<SdkAdmissionResult> {
+  if (!requestId) return { ok: false, reason: 'SDK request identifier is missing' };
+  const payload = JSON.stringify({
+    protocolVersion: '1',
+    requestId,
+    operation: 'admitApplicableSemanticContext',
+    payload: request,
+  } satisfies RuntimeAdmissionRequest);
+  const encoded = await transport.send(payload, signal);
+  let value: unknown;
+  try {
+    value = JSON.parse(encoded);
+  } catch {
+    return { ok: false, reason: 'SDK admission response is invalid JSON' };
+  }
+  if (!isAdmissionResponse(value, requestId)) {
+    return { ok: false, reason: isAdmissionFailure(value, requestId) ? value.reason : 'SDK admission response is invalid' };
+  }
+  const admission = admitSdkContext(value.payload, adapter);
+  return admission.ok
+    ? { ...admission, ...(value.provenance ? { provenance: value.provenance } : {}) }
+    : admission;
+}
+
+export async function receiveRuntimeAdmissionDecision(
+  request: unknown,
+  requestId: string,
+  transport: RuntimeTransport,
+  signal?: AbortSignal,
+): Promise<RemoteAdmissionResult> {
+  if (!requestId) return { ok: false, reason: 'SDK request identifier is missing' };
+  const payload = JSON.stringify({
+    protocolVersion: '1',
+    requestId,
+    operation: 'admitApplicableSemanticContext',
+    payload: request,
+  } satisfies RuntimeAdmissionRequest);
+  const encoded = await transport.send(payload, signal);
+  let value: unknown;
+  try {
+    value = JSON.parse(encoded);
+  } catch {
+    return { ok: false, reason: 'SDK admission response is invalid JSON' };
+  }
+  if (!isAdmissionResponse(value, requestId) || !value.provenance) {
+    return { ok: false, reason: isAdmissionFailure(value, requestId) ? value.reason : 'SDK admission response is invalid' };
+  }
+  return { ok: true, context: value.payload, provenance: value.provenance };
+}
+
+export function encodeRuntimeOperationRequest(
+  requestId: string,
+  context: ApplicableSemanticContext | null | undefined,
+  operation: RuntimeOperation | null | undefined,
+): SdkTransportResult<string> {
+  if (!requestId) return { ok: false, reason: 'SDK request identifier is missing' };
+  if (!isObject(context)) return { ok: false, reason: 'Runtime context is not admitted' };
+  if (!isRuntimeOperationShape(operation)) return { ok: false, reason: 'SDK Runtime operation is invalid' };
+  const operationValue = operation as { operationKind: string };
+  return {
+    ok: true,
+    value: JSON.stringify({ protocolVersion: '1', requestId, operation: operationValue.operationKind, context, payload: operation }),
+  };
+}
+
+export async function receiveRuntimeOperationResult(
+  request: unknown,
+  requestId: string,
+  transport: RuntimeTransport,
+  signal?: AbortSignal,
+): Promise<RemoteRuntimeOperationResult> {
+  if (!requestId) return { ok: false, reason: 'SDK request identifier is missing' };
+  if (!isObject(request)) return { ok: false, reason: 'SDK Runtime operation request is invalid' };
+  const encoded = await transport.send(JSON.stringify({ protocolVersion: '1', requestId, ...request }), signal);
+  const parsed = parseJson(encoded);
+  if (!parsed.ok) return { ok: false, reason: 'SDK Runtime operation response is invalid JSON' };
+  if (!isObject(parsed.value) || parsed.value.protocolVersion !== '1' || parsed.value.requestId !== requestId) {
+    return { ok: false, reason: 'SDK Runtime operation response is invalid' };
+  }
+  if (parsed.value.ok === false && typeof parsed.value.reason === 'string' && parsed.value.reason.length > 0)
+    return { ok: false, reason: parsed.value.reason };
+  if (parsed.value.ok !== true || !isObject(parsed.value.payload) || !isRuntimeOperationResultShape(parsed.value.payload))
+    return { ok: false, reason: 'SDK Runtime operation response is invalid' };
+  return { ok: true, result: parsed.value.payload as RuntimeOperationResult };
+}
+
 export function encodeRuntimeOperation(
   context: ApplicableSemanticContext | null | undefined,
   operation: RuntimeOperation | null | undefined,
@@ -581,4 +731,44 @@ function isRuntimeOperationResult(
   adapter: RuntimeProtocolAdapter,
 ): value is RuntimeOperationResult {
   return adapter.validateOperationResult(value).valid;
+}
+
+function isAdmissionResponse(value: unknown, requestId: string): value is RuntimeAdmissionResponse {
+  if (typeof value !== 'object' || value === null) return false;
+  const response = value as Record<string, unknown>;
+  return response.protocolVersion === '1' && response.requestId === requestId && response.ok === true && 'payload' in response
+    && (!('provenance' in response) || isAdmissionProvenance(response.provenance));
+}
+
+function isAdmissionProvenance(value: unknown): value is RuntimeAdmissionProvenance {
+  if (typeof value !== 'object' || value === null) return false;
+  const provenance = value as Record<string, unknown>;
+  return isIdentityShape(provenance.governedRepositoryIdentity)
+    && isIdentityShape(provenance.projectionIdentity)
+    && typeof provenance.projectionVersion === 'string' && provenance.projectionVersion.length > 0
+    && typeof provenance.compiledAt === 'string' && provenance.compiledAt.length > 0
+    && isFreshness(provenance.freshness);
+}
+
+  function isFreshness(value: unknown): value is RuntimeAdmissionProvenance['freshness'] {
+    if (typeof value !== 'object' || value === null) return false;
+    const freshness = value as Record<string, unknown>;
+    return (freshness.status === 'current' || freshness.status === 'superseded'
+    || freshness.status === 'revoked' || freshness.status === 'unknown')
+    && typeof freshness.checkedAt === 'string' && freshness.checkedAt.length > 0
+    && (freshness.currentProjectionVersion === undefined || typeof freshness.currentProjectionVersion === 'string')
+    && (freshness.verifiedBy === undefined || isIdentityShape(freshness.verifiedBy));
+  }
+
+function isIdentityShape(value: unknown): value is { identityKind: string; value: string } {
+  if (typeof value !== 'object' || value === null) return false;
+  const identity = value as Record<string, unknown>;
+  return typeof identity.identityKind === 'string' && identity.identityKind.length > 0
+    && typeof identity.value === 'string' && identity.value.length > 0;
+}
+
+function isAdmissionFailure(value: unknown, requestId: string): value is RuntimeAdmissionFailureResponse {
+  if (typeof value !== 'object' || value === null) return false;
+  const response = value as Record<string, unknown>;
+  return response.protocolVersion === '1' && response.requestId === requestId && response.ok === false && typeof response.reason === 'string' && response.reason.length > 0;
 }
