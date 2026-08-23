@@ -1,5 +1,12 @@
 # Changelog
 
+## 0.9.0
+
+- Add pre-governance Domain Pack request encoding for eligible discovery,
+	installation, and compatibility reporting.
+- Add correlated, fail-closed decoding for pre-governance Domain Pack
+	responses.
+
 ## 0.8.0
 
 - Add adapter-free Runtime operation request encoding and result receipt.

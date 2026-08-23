@@ -3,6 +3,8 @@ import {
   decodeRuntimeOperation,
   decodeRuntimeRequest,
   encodeDomainPackRequest,
+  encodePreGovernanceDomainPackRequest,
+  decodePreGovernanceDomainPackResponse,
   decodeDomainPackInstallResponse,
   encodeRuntimeFailureResponse,
   encodeRuntimeRequest,
@@ -316,6 +318,24 @@ describe('SDK Runtime transport', () => {
       ok: true,
       value: { packIdentity: 'approved-pack', manifest: '{"identity":"opaque"}' },
     });
+  });
+
+  it('encodes pre-governance Domain Pack requests without Runtime context', () => {
+    expect(encodePreGovernanceDomainPackRequest('request-3', 'discoverEligibleDomainPacks', {
+      principalId: 'principal-1', repositoryId: 'repository-1', payload: { source: 'licensee' },
+    })).toEqual({
+      ok: true,
+      value: JSON.stringify({
+        protocolVersion: '1', requestId: 'request-3', operation: 'discoverEligibleDomainPacks',
+        principalId: 'principal-1', repositoryId: 'repository-1', payload: { source: 'licensee' },
+      }),
+    });
+  });
+
+  it('fails closed for malformed pre-governance Domain Pack responses', () => {
+    expect(decodePreGovernanceDomainPackResponse('request-4', JSON.stringify({
+      protocolVersion: '1', requestId: 'other', ok: true, payload: {},
+    }))).toEqual({ ok: false, reason: 'SDK pre-governance Domain Pack response is invalid' });
   });
 
   it('preserves the approved protocol request envelope', () => {

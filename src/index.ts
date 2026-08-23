@@ -135,6 +135,46 @@ export type RuntimeProtocolResponseEnvelope =
 
 export type DomainPackHostOperation = 'discoverDomainPacks' | 'installDomainPack';
 
+export type PreGovernanceDomainPackOperation =
+  | 'discoverEligibleDomainPacks'
+  | 'installEligibleDomainPack'
+  | 'reportDomainPackCompatibility';
+
+export interface PreGovernanceDomainPackRequest {
+  protocolVersion: '1';
+  requestId: string;
+  operation: PreGovernanceDomainPackOperation;
+  principalId: string;
+  repositoryId: string;
+  payload: unknown;
+}
+
+export type PreGovernanceDomainPackResponse =
+  | { protocolVersion: '1'; requestId: string; ok: true; payload: unknown }
+  | { protocolVersion: '1'; requestId: string; ok: false; reason: string };
+
+export function encodePreGovernanceDomainPackRequest(
+  requestId: string,
+  operation: PreGovernanceDomainPackOperation,
+  request: { principalId: string; repositoryId: string; payload: unknown },
+): SdkTransportResult<string> {
+  if (!requestId) return { ok: false, reason: 'SDK request identifier is missing' };
+  if (!request.principalId) return { ok: false, reason: 'SDK principal identifier is missing' };
+  if (!request.repositoryId) return { ok: false, reason: 'SDK repository identifier is missing' };
+  return { ok: true, value: JSON.stringify({ protocolVersion: '1', requestId, operation, ...request } satisfies PreGovernanceDomainPackRequest) };
+}
+
+export function decodePreGovernanceDomainPackResponse(
+  requestId: string,
+  payload: string,
+): SdkTransportResult<PreGovernanceDomainPackResponse> {
+  const parsed = parseJson(payload);
+  if (!parsed.ok || !isPreGovernanceDomainPackResponse(parsed.value, requestId)) {
+    return { ok: false, reason: 'SDK pre-governance Domain Pack response is invalid' };
+  }
+  return { ok: true, value: parsed.value };
+}
+
 export interface DomainPackHostRequest {
   protocolVersion: '1';
   requestId: string;
@@ -328,6 +368,15 @@ function isDomainPackInstallResponseEnvelope(
   const response = envelope.payload as Record<string, unknown>;
   return typeof response.packIdentity === 'string' && response.packIdentity.length > 0
     && typeof response.manifest === 'string';
+}
+
+function isPreGovernanceDomainPackResponse(
+  value: unknown,
+  requestId: string,
+): value is PreGovernanceDomainPackResponse {
+  if (!isObject(value) || value.protocolVersion !== '1' || value.requestId !== requestId) return false;
+  if (value.ok === false) return typeof value.reason === 'string' && value.reason.length > 0;
+  return value.ok === true && 'payload' in value;
 }
 
 function isAcceptanceRecord(value: unknown): value is AcceptanceRecord {
