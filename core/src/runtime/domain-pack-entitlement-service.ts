@@ -63,9 +63,9 @@ export class DomainPackEntitlementService {
 
   async issue(input: DomainPackEntitlementIssueInput): Promise<string> {
     const claims: DomainPackEntitlementClaims = { ...input };
-    const signature = sign(null, Buffer.from(canonicalize(claims)), this.issuer.privateKey).toString('base64url');
+    const signature = sign('sha256', Buffer.from(canonicalize(claims)), this.issuer.privateKey).toString('base64url');
     const envelope: DomainPackEntitlementEnvelope = {
-      version: '1', keyId: this.issuer.keyId, claims, signature,
+      version: '1', algorithm: 'ECDSA_SHA_256', keyId: this.issuer.keyId, claims, signature,
     };
     await this.issuer.audit({
       eventKind: 'issued', grantId: claims.grantId, packIdentity: claims.packIdentity,

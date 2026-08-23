@@ -15,6 +15,7 @@ export interface DomainPackEntitlementClaims {
 export interface DomainPackEntitlementEnvelope {
   version: '1';
   keyId: string;
+  algorithm: 'ECDSA_SHA_256';
   claims: DomainPackEntitlementClaims;
   signature: string;
 }
@@ -51,7 +52,7 @@ export async function validateDomainPackEntitlement(
   if (!publicKey) return failure('entitlement signing key is unknown');
   const signatureValid = (() => {
     try {
-      return verify(null, Buffer.from(canonicalize(envelope.claims)), publicKey, decodeSignature(envelope.signature));
+      return verify('sha256', Buffer.from(canonicalize(envelope.claims)), publicKey, decodeSignature(envelope.signature));
     } catch {
       return false;
     }
@@ -82,7 +83,8 @@ function parseEnvelope(value: string): DomainPackEntitlementEnvelope | undefined
     if (typeof parsed !== 'object' || parsed === null || Array.isArray(parsed)) return undefined;
     const envelope = parsed as Record<string, unknown>;
     const claims = envelope.claims;
-    if (envelope.version !== '1' || typeof envelope.keyId !== 'string' || !envelope.keyId
+    if (envelope.version !== '1' || envelope.algorithm !== 'ECDSA_SHA_256'
+      || typeof envelope.keyId !== 'string' || !envelope.keyId
       || typeof envelope.signature !== 'string' || !envelope.signature
       || typeof claims !== 'object' || claims === null || Array.isArray(claims)) return undefined;
     const candidate = claims as Record<string, unknown>;
@@ -92,7 +94,10 @@ function parseEnvelope(value: string): DomainPackEntitlementEnvelope | undefined
       || !candidate.operations.every((item) => typeof item === 'string')
       || typeof candidate.repositoryScope !== 'string' || typeof candidate.issuedAt !== 'string'
       || typeof candidate.expiresAt !== 'string' || typeof candidate.grantId !== 'string') return undefined;
-    return { version: '1', keyId: envelope.keyId, claims: candidate as unknown as DomainPackEntitlementClaims, signature: envelope.signature };
+    return {
+      version: '1', algorithm: 'ECDSA_SHA_256', keyId: envelope.keyId,
+      claims: candidate as unknown as DomainPackEntitlementClaims, signature: envelope.signature,
+    };
   } catch {
     return undefined;
   }

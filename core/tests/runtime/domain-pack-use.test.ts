@@ -6,7 +6,7 @@ import {
   type DomainPackEntitlementClaims,
 } from '../../src/runtime/index.js';
 
-const { privateKey, publicKey } = generateKeyPairSync('ed25519');
+const { privateKey, publicKey } = generateKeyPairSync('ec', { namedCurve: 'prime256v1' });
 const key = { keyId: 'pack-key', key: Buffer.alloc(32, 7) };
 const claims: DomainPackEntitlementClaims = {
   licenseeKind: 'organization', licenseeId: 'org-1', packIdentity: 'pack-1', packVersion: '1.0.0',
@@ -17,7 +17,7 @@ const canonicalize = (value: unknown): string => value === null || typeof value 
   ? JSON.stringify(value)
   : Array.isArray(value) ? `[${value.map(canonicalize).join(',')}]`
   : `{${Object.keys(value as object).sort().map((key) => `${JSON.stringify(key)}:${canonicalize((value as Record<string, unknown>)[key])}`).join(',')}}`;
-const grant = JSON.stringify({ version: '1', keyId: 'grant-key', claims, signature: sign(null, Buffer.from(canonicalize(claims)), privateKey).toString('base64url') });
+const grant = JSON.stringify({ version: '1', algorithm: 'ECDSA_SHA_256', keyId: 'grant-key', claims, signature: sign('sha256', Buffer.from(canonicalize(claims)), privateKey).toString('base64url') });
 const request = { grant, licenseeKind: 'organization' as const, licenseeId: 'org-1', packIdentity: 'pack-1', packVersion: '1.0.0', operation: 'use', repositoryId: 'repo-1', now: '2026-08-21T12:00:00Z' };
 const validation = { publicKeys: new Map([['grant-key', publicKey]]), isRevoked: async () => false, isRepositoryInScope: (scope: string) => scope === 'org-1' };
 

@@ -5,7 +5,7 @@ import {
   type DomainPackEntitlementClaims,
 } from '../../src/runtime/index.js';
 
-const { privateKey, publicKey } = generateKeyPairSync('ed25519');
+const { privateKey, publicKey } = generateKeyPairSync('ec', { namedCurve: 'prime256v1' });
 const claims: DomainPackEntitlementClaims = {
   licenseeKind: 'organization', licenseeId: 'org-1', packIdentity: 'pack-1', packVersion: '1.0.0',
   operations: ['use'], repositoryScope: 'administered-by:org-1',
@@ -21,8 +21,8 @@ function canonicalize(value: unknown): string {
 function grant(overrides: Partial<DomainPackEntitlementClaims> = {}): string {
   const signedClaims = { ...claims, ...overrides };
   return JSON.stringify({
-    version: '1', keyId: 'key-1', claims: signedClaims,
-    signature: sign(null, Buffer.from(canonicalize(signedClaims)), privateKey).toString('base64url'),
+    version: '1', algorithm: 'ECDSA_SHA_256', keyId: 'key-1', claims: signedClaims,
+    signature: sign('sha256', Buffer.from(canonicalize(signedClaims)), privateKey).toString('base64url'),
   });
 }
 

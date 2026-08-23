@@ -2,7 +2,7 @@ import { generateKeyPairSync } from 'node:crypto';
 import { describe, expect, it } from 'vitest';
 import { DomainPackEntitlementService, PersistentDomainPackEntitlementRevocationStore } from '../../src/runtime/index.js';
 
-const { privateKey } = generateKeyPairSync('ed25519');
+const { privateKey } = generateKeyPairSync('ec', { namedCurve: 'prime256v1' });
 const input = {
   licenseeKind: 'organization' as const, licenseeId: 'org-1', packIdentity: 'pack-1', packVersion: '1.0.0',
   operations: ['use'], repositoryScope: 'administered-by:org-1',
@@ -21,8 +21,8 @@ describe('Domain Pack entitlement service', () => {
   it('issues grants and audits issuance', async () => {
     const events: unknown[] = [];
     const service = new DomainPackEntitlementService({ keyId: 'key-1', privateKey, audit: async (event) => { events.push(event); } }, revocationStore());
-    const grant = JSON.parse(await service.issue(input)) as { version: string; keyId: string; claims: typeof input; signature: string };
-    expect(grant).toMatchObject({ version: '1', keyId: 'key-1', claims: input });
+    const grant = JSON.parse(await service.issue(input)) as { version: string; algorithm: string; keyId: string; claims: typeof input; signature: string };
+    expect(grant).toMatchObject({ version: '1', algorithm: 'ECDSA_SHA_256', keyId: 'key-1', claims: input });
     expect(grant.signature).toBeTruthy();
     expect(events).toEqual([{ eventKind: 'issued', grantId: 'grant-1', packIdentity: 'pack-1', packVersion: '1.0.0', licenseeId: 'org-1', timestamp: input.issuedAt }]);
   });
