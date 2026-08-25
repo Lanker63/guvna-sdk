@@ -362,6 +362,27 @@ describe('SDK Runtime transport', () => {
     });
   });
 
+  it('serializes the admitted context in the Runtime request envelope', () => {
+    const admittedContext = { ...context, projectionVersion: 'admitted-version' };
+    const admittingAdapter = {
+      ...adapter,
+      admitContext: () => ({ ok: true as const, context: admittedContext }),
+    };
+
+    const encoded = encodeRuntimeRequest('request-admitted', context, operation, admittingAdapter);
+
+    expect(encoded).toEqual({
+      ok: true,
+      value: JSON.stringify({
+        protocolVersion: '1',
+        requestId: 'request-admitted',
+        operation: 'recordEvidence',
+        context: admittedContext,
+        payload: operation,
+      }),
+    });
+  });
+
   it('preserves correlated successful and failed response envelopes', () => {
     const result = { ok: true as const, value: operation };
     expect(encodeRuntimeResponse('request-1', context, result, adapter)).toEqual({

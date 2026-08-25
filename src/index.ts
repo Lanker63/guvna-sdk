@@ -263,12 +263,13 @@ export function encodeRuntimeRequest(
   operation: RuntimeOperation | null | undefined,
   adapter: RuntimeProtocolAdapter,
 ): SdkTransportResult<string> {
+  const admission = admitSdkContext(context, adapter);
+  if (!admission.ok) return admission;
   const encodedOperation = encodeRuntimeOperation(context, operation, adapter);
   if (!encodedOperation.ok) return encodedOperation;
   if (!requestId) return { ok: false, reason: 'SDK request identifier is missing' };
   if (!operation || typeof operation !== 'object' || !('operationKind' in operation))
     return { ok: false, reason: 'SDK Runtime operation is missing' };
-  if (!context) return { ok: false, reason: 'Runtime context is not admitted' };
   const runtimeOperation = operation as RuntimeOperation & { operationKind: string };
   return {
     ok: true,
@@ -276,7 +277,7 @@ export function encodeRuntimeRequest(
       protocolVersion: '1',
       requestId,
       operation: runtimeOperation.operationKind,
-      context,
+      context: admission.context,
       payload: operation,
     } satisfies RuntimeProtocolRequest),
   };
@@ -325,6 +326,133 @@ export function encodeRuntimeFailureResponse(
     ok: true,
     value: JSON.stringify({ protocolVersion: '1', requestId, ok: false, reason } satisfies RuntimeProtocolFailureResponse),
   };
+}
+
+export interface DomainPackEntitlementIssuanceRequestPayload {
+  licenseeKind: 'organization' | 'user';
+  licenseeId: string;
+  packIdentity: string;
+  packVersion: string;
+  operations: string[];
+  repositoryScope: string;
+}
+
+export interface DomainPackEntitlementIssuanceRequest {
+  protocolVersion: '1';
+  requestId: string;
+  operation: 'issueDomainPackEntitlement';
+  payload: DomainPackEntitlementIssuanceRequestPayload;
+}
+
+export type DomainPackEntitlementIssuanceOutcome =
+  | { protocolVersion: '1'; requestId: string; outcome: 'issued'; grant: string; grantId: string; issuedAt: string; expiresAt: string }
+  | { protocolVersion: '1'; requestId: string; outcome: 'denied'; reason: string }
+  | { protocolVersion: '1'; requestId: string; outcome: 'unavailable'; reason: string };
+
+/**
+ * Encodes a request for the Runtime-owned `issueDomainPackEntitlement`
+ * operation. The payload carries only pre-authorized inputs; grant identity,
+ * issuance timestamp, and validity remain Runtime-controlled outputs, never
+ * caller-supplied.
+ */
+export function encodeDomainPackEntitlementIssuanceRequest(
+  requestId: string,
+  payload: DomainPackEntitlementIssuanceRequestPayload,
+): SdkTransportResult<string> {
+  if (!requestId) return { ok: false, reason: 'SDK request identifier is missing' };
+  if (!isDomainPackEntitlementIssuanceRequestPayload(payload)) {
+    return { ok: false, reason: 'SDK entitlement issuance request payload is invalid' };
+  }
+  return {
+    ok: true,
+    value: JSON.stringify({
+      protocolVersion: '1',
+      requestId,
+      operation: 'issueDomainPackEntitlement',
+      payload,
+    } satisfies DomainPackEntitlementIssuanceRequest),
+  };
+}
+
+export function decodeDomainPackEntitlementIssuanceRequest(
+  payload: string,
+): SdkTransportResult<DomainPackEntitlementIssuanceRequest> {
+  const parsed = parseJson(payload);
+  if (!parsed.ok) return parsed;
+  if (!isDomainPackEntitlementIssuanceRequestEnvelope(parsed.value)) {
+    return { ok: false, reason: 'SDK entitlement issuance request is invalid' };
+  }
+  return { ok: true, value: parsed.value };
+}
+
+/** Encodes an explicit issued/denied/unavailable outcome, correlated to `requestId`. */
+export function encodeDomainPackEntitlementIssuanceOutcome(
+  outcome: DomainPackEntitlementIssuanceOutcome,
+): SdkTransportResult<string> {
+  if (!isDomainPackEntitlementIssuanceOutcome(outcome)) {
+    return { ok: false, reason: 'SDK entitlement issuance outcome is invalid' };
+  }
+  return { ok: true, value: JSON.stringify(outcome) };
+}
+
+export function decodeDomainPackEntitlementIssuanceOutcome(
+  requestId: string,
+  payload: string,
+): SdkTransportResult<DomainPackEntitlementIssuanceOutcome> {
+  if (!requestId) return { ok: false, reason: 'SDK request identifier is missing' };
+  const parsed = parseJson(payload);
+  if (!parsed.ok) return parsed;
+  if (!isDomainPackEntitlementIssuanceOutcome(parsed.value) || parsed.value.requestId !== requestId) {
+    return { ok: false, reason: 'SDK entitlement issuance outcome is invalid' };
+  }
+  return { ok: true, value: parsed.value };
+}
+
+function isDomainPackEntitlementIssuanceRequestPayload(
+  value: unknown,
+): value is DomainPackEntitlementIssuanceRequestPayload {
+  if (!isObject(value)) return false;
+  return (
+    (value.licenseeKind === 'organization' || value.licenseeKind === 'user')
+    && typeof value.licenseeId === 'string' && value.licenseeId.length > 0
+    && typeof value.packIdentity === 'string' && value.packIdentity.length > 0
+    && typeof value.packVersion === 'string' && value.packVersion.length > 0
+    && Array.isArray(value.operations) && value.operations.length > 0
+    && value.operations.every((item) => typeof item === 'string' && item.length > 0)
+    && typeof value.repositoryScope === 'string' && value.repositoryScope.length > 0
+  );
+}
+
+function isDomainPackEntitlementIssuanceRequestEnvelope(
+  value: unknown,
+): value is DomainPackEntitlementIssuanceRequest {
+  return (
+    isObject(value)
+    && value.protocolVersion === '1'
+    && typeof value.requestId === 'string' && value.requestId.length > 0
+    && value.operation === 'issueDomainPackEntitlement'
+    && isDomainPackEntitlementIssuanceRequestPayload(value.payload)
+  );
+}
+
+function isDomainPackEntitlementIssuanceOutcome(
+  value: unknown,
+): value is DomainPackEntitlementIssuanceOutcome {
+  if (!isObject(value) || value.protocolVersion !== '1' || typeof value.requestId !== 'string' || !value.requestId) {
+    return false;
+  }
+  if (value.outcome === 'issued') {
+    return (
+      typeof value.grant === 'string' && value.grant.length > 0
+      && typeof value.grantId === 'string' && value.grantId.length > 0
+      && typeof value.issuedAt === 'string' && value.issuedAt.length > 0
+      && typeof value.expiresAt === 'string' && value.expiresAt.length > 0
+    );
+  }
+  if (value.outcome === 'denied' || value.outcome === 'unavailable') {
+    return typeof value.reason === 'string' && value.reason.length > 0;
+  }
+  return false;
 }
 
 function parseJson(payload: string): SdkTransportResult<unknown> {
