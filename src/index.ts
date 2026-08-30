@@ -135,6 +135,55 @@ export type RuntimeProtocolResponseEnvelope =
 
 export type DomainPackHostOperation = 'discoverDomainPacks' | 'installDomainPack';
 
+export interface AuthorityAdmissionRequestPayload {
+  profile?: object;
+  operation: string;
+  scope: object;
+  principalId: string;
+  authorityId: string;
+  bindingVersion: string;
+  artifactId: string;
+  algorithm: string;
+  keyId: string;
+  trustRootId: string;
+  issuedAt: string;
+  expiresAt: string;
+  signature: string;
+}
+
+export interface AuthorityAdmissionRequest {
+  protocolVersion: '1';
+  requestId: string;
+  operation: 'admitAuthority';
+  payload: AuthorityAdmissionRequestPayload;
+}
+
+export type AuthorityAdmissionOutcome =
+  | { protocolVersion: '1'; requestId: string; state: 'admitted'; profileId: string; profileVersion: string; authorityId: string }
+  | { protocolVersion: '1'; requestId: string; state: 'expired' | 'revoked' | 'unavailable' | 'rejected'; reason: string };
+
+export function encodeAuthorityAdmissionRequest(
+  requestId: string,
+  payload: AuthorityAdmissionRequestPayload,
+): SdkTransportResult<string> {
+  if (!requestId) return { ok: false, reason: 'SDK request identifier is missing' };
+  if (!isAuthorityAdmissionRequestPayload(payload)) return { ok: false, reason: 'SDK authority admission request payload is invalid' };
+  return { ok: true, value: JSON.stringify({ protocolVersion: '1', requestId, operation: 'admitAuthority', payload } satisfies AuthorityAdmissionRequest) };
+}
+
+export function decodeAuthorityAdmissionRequest(payload: string): SdkTransportResult<AuthorityAdmissionRequest> {
+  const parsed = parseJson(payload);
+  if (!parsed.ok || !isAuthorityAdmissionRequest(parsed.value)) return { ok: false, reason: 'SDK authority admission request is invalid' };
+  return { ok: true, value: parsed.value };
+}
+
+export function decodeAuthorityAdmissionOutcome(requestId: string, payload: string): SdkTransportResult<AuthorityAdmissionOutcome> {
+  if (!requestId) return { ok: false, reason: 'SDK request identifier is missing' };
+  const parsed = parseJson(payload);
+  if (!parsed.ok || !isAuthorityAdmissionOutcome(parsed.value) || parsed.value.requestId !== requestId) return { ok: false, reason: 'SDK authority admission outcome is invalid' };
+  return { ok: true, value: parsed.value };
+}
+
 export type PreGovernanceDomainPackOperation =
   | 'discoverEligibleDomainPacks'
   | 'installEligibleDomainPack'
@@ -421,6 +470,27 @@ function isDomainPackEntitlementIssuanceRequestPayload(
     && value.operations.every((item) => typeof item === 'string' && item.length > 0)
     && typeof value.repositoryScope === 'string' && value.repositoryScope.length > 0
   );
+}
+
+function isAuthorityAdmissionRequestPayload(value: unknown): value is AuthorityAdmissionRequestPayload {
+  if (!isObject(value)) return false;
+  const request = value as Record<string, unknown>;
+  return typeof request.operation === 'string' && request.operation.length > 0
+    && isObject(request.scope)
+    && ['principalId', 'authorityId', 'bindingVersion', 'artifactId', 'algorithm', 'keyId', 'trustRootId', 'issuedAt', 'expiresAt', 'signature']
+      .every((field) => typeof request[field] === 'string' && (request[field] as string).length > 0)
+    && (request.profile === undefined || isObject(request.profile));
+}
+
+function isAuthorityAdmissionRequest(value: unknown): value is AuthorityAdmissionRequest {
+  return isObject(value) && value.protocolVersion === '1' && typeof value.requestId === 'string' && value.requestId.length > 0
+    && value.operation === 'admitAuthority' && isAuthorityAdmissionRequestPayload(value.payload);
+}
+
+function isAuthorityAdmissionOutcome(value: unknown): value is AuthorityAdmissionOutcome {
+  if (!isObject(value) || value.protocolVersion !== '1' || typeof value.requestId !== 'string' || !value.requestId || typeof value.state !== 'string') return false;
+  if (value.state === 'admitted') return typeof value.profileId === 'string' && !!value.profileId && typeof value.profileVersion === 'string' && !!value.profileVersion && typeof value.authorityId === 'string' && !!value.authorityId;
+  return ['expired', 'revoked', 'unavailable', 'rejected'].includes(value.state) && typeof value.reason === 'string' && value.reason.length > 0;
 }
 
 function isDomainPackEntitlementIssuanceRequestEnvelope(
