@@ -1,5 +1,13 @@
 # Changelog
 
+## 0.11.0 - 2026-08-31
+
+- Publish the 0.11.0 SDK release after updating the package metadata and release artifacts.
+
+## 0.10.1 - 2026-08-31
+
+- Republish the SDK after rebuilding the current release artifacts.
+
 ## 0.9.0
 
 - Add pre-governance Domain Pack request encoding for eligible discovery,

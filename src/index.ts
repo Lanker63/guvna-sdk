@@ -135,6 +135,99 @@ export type RuntimeProtocolResponseEnvelope =
 
 export type WorkSystemPackHostOperation = 'discoverWorkSystemPacks' | 'installWorkSystemPack';
 
+export type GovernedRetryQueueOperation = 'enqueueRetryWorkItem' | 'leaseRetryWorkItem' | 'ackRetryWorkItem' | 'releaseRetryWorkItem';
+
+export interface GovernedRetryQueueClaims {
+  governedRepositoryId: string;
+  principalId: string;
+  authorityScope: string;
+  grantedAt: string;
+}
+
+export interface GovernedRetryQueueLastGrantedClaims extends GovernedRetryQueueClaims {
+  claimsDigest: string;
+}
+
+export interface GovernedRetryQueueItem {
+  queueItemId: string;
+  governedRepositoryId: string;
+  requestId: string;
+  operation: GovernedRetryQueueOperation;
+  payload: unknown;
+  idempotencyKey: string;
+  enqueuedAt: string;
+  status: 'queued' | 'leased' | 'acked' | 'released';
+  leaseId?: string;
+  leasedAt?: string;
+  leaseExpiresAt?: string;
+  lastGrantedClaims?: GovernedRetryQueueLastGrantedClaims;
+  completedAt?: string;
+  releasedAt?: string;
+  duplicateOfQueueItemId?: string;
+}
+
+export interface GovernedRetryQueueLease {
+  queueItemId: string;
+  leaseId: string;
+  requestId: string;
+  operation: GovernedRetryQueueOperation;
+  payload: unknown;
+  idempotencyKey: string;
+  leasedAt: string;
+  leaseExpiresAt: string;
+  lastGrantedClaims: GovernedRetryQueueLastGrantedClaims;
+}
+
+export interface GovernedRetryQueueAck {
+  queueItemId: string;
+  leaseId: string;
+  acknowledgedAt: string;
+}
+
+export interface GovernedRetryQueueRelease {
+  queueItemId: string;
+  leaseId: string;
+  releasedAt: string;
+  reason: string;
+}
+
+export function encodeGovernedRetryQueueItem(item: GovernedRetryQueueItem): SdkTransportResult<string> {
+  return isGovernedRetryQueueItem(item)
+    ? { ok: true, value: JSON.stringify(item) }
+    : { ok: false, reason: 'SDK governed retry queue item is invalid' };
+}
+
+export function decodeGovernedRetryQueueItem(payload: string): SdkTransportResult<GovernedRetryQueueItem> {
+  const parsed = parseJson(payload);
+  if (!parsed.ok) return parsed;
+  return isGovernedRetryQueueItem(parsed.value)
+    ? { ok: true, value: parsed.value }
+    : { ok: false, reason: 'SDK governed retry queue item is invalid' };
+}
+
+export function buildGovernedRetryQueueIdempotencyKey(
+  governedRepositoryId: string,
+  requestId: string,
+  operation: GovernedRetryQueueOperation,
+  payload: unknown,
+): SdkTransportResult<string> {
+  if (!governedRepositoryId) return { ok: false, reason: 'SDK governed repository identifier is missing' };
+  if (!requestId) return { ok: false, reason: 'SDK request identifier is missing' };
+  if (!operation) return { ok: false, reason: 'SDK governed retry queue operation is missing' };
+  return { ok: true, value: `${governedRepositoryId}:${requestId}:${operation}:${canonicalize(payload)}` };
+}
+
+export function isGovernedRetryQueueClaimsEligible(
+  lastGrantedClaims: GovernedRetryQueueLastGrantedClaims | undefined,
+  currentClaims: GovernedRetryQueueClaims,
+): boolean {
+  if (!lastGrantedClaims) return true;
+  return lastGrantedClaims.governedRepositoryId === currentClaims.governedRepositoryId
+    && lastGrantedClaims.principalId === currentClaims.principalId
+    && lastGrantedClaims.authorityScope === currentClaims.authorityScope
+    && lastGrantedClaims.claimsDigest === canonicalize(currentClaims);
+}
+
 export interface AuthorityAdmissionRequestPayload {
   profile?: object;
   operation: string;
@@ -504,6 +597,17 @@ function isWorkSystemPackEntitlementIssuanceOutcome(
   return false;
 }
 
+function isGovernedRetryQueueItem(value: unknown): value is GovernedRetryQueueItem {
+  if (!isObject(value)) return false;
+  return typeof value.queueItemId === 'string' && value.queueItemId.length > 0
+    && typeof value.governedRepositoryId === 'string' && value.governedRepositoryId.length > 0
+    && typeof value.requestId === 'string' && value.requestId.length > 0
+    && typeof value.operation === 'string' && value.operation.length > 0
+    && typeof value.idempotencyKey === 'string' && value.idempotencyKey.length > 0
+    && typeof value.enqueuedAt === 'string' && value.enqueuedAt.length > 0
+    && (value.status === 'queued' || value.status === 'leased' || value.status === 'acked' || value.status === 'released');
+}
+
 function parseJson(payload: string): SdkTransportResult<unknown> {
   try {
     return { ok: true, value: JSON.parse(payload) };
@@ -608,6 +712,12 @@ function isAcceptanceManifestEntry(value: unknown): value is AcceptanceRecordFil
 function isRepositoryRelativePath(path: unknown): path is string {
   return typeof path === 'string' && path.length > 0 && !path.startsWith('/')
     && !path.includes('\\') && !path.split('/').includes('..') && !path.split('/').includes('');
+}
+
+function canonicalize(value: unknown): string {
+  if (value === null || typeof value !== 'object') return JSON.stringify(value);
+  if (Array.isArray(value)) return `[${value.map(canonicalize).join(',')}]`;
+  return `{${Object.keys(value as object).sort().map((key) => `${JSON.stringify(key)}:${canonicalize((value as Record<string, unknown>)[key])}`).join(',')}}`;
 }
 
 // Repository Authority freshness and acceptance-decision transport.
