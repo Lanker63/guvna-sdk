@@ -2,10 +2,10 @@ import { describe, expect, it } from 'vitest';
 import {
   decodeRuntimeOperation,
   decodeRuntimeRequest,
-  encodeDomainPackRequest,
-  encodePreGovernanceDomainPackRequest,
-  decodePreGovernanceDomainPackResponse,
-  decodeDomainPackInstallResponse,
+  encodeWorkSystemPackRequest,
+  encodePreGovernanceWorkSystemPackRequest,
+  decodePreGovernanceWorkSystemPackResponse,
+  decodeWorkSystemPackInstallResponse,
   encodeRuntimeFailureResponse,
   encodeRuntimeRequest,
   encodeRuntimeResponse,
@@ -292,21 +292,21 @@ describe('SDK Runtime transport', () => {
     }))).toEqual({ ok: false, reason: 'SDK acceptance record is invalid' });
   });
 
-  it('encodes opaque Domain Pack host requests without interpreting payloads', () => {
+  it('encodes opaque Work System Pack host requests without interpreting payloads', () => {
     const payload = { source: 'approved-source', manifest: { opaque: true } };
-    expect(encodeDomainPackRequest('request-1', 'discoverDomainPacks', context, payload, adapter)).toEqual({
+    expect(encodeWorkSystemPackRequest('request-1', 'discoverWorkSystemPacks', context, payload, adapter)).toEqual({
       ok: true,
       value: JSON.stringify({
         protocolVersion: '1',
         requestId: 'request-1',
-        operation: 'discoverDomainPacks',
+        operation: 'discoverWorkSystemPacks',
         context,
         payload,
       }),
     });
   });
 
-  it('decodes an opaque Domain Pack installation response', () => {
+  it('decodes an opaque Work System Pack installation response', () => {
     const response = JSON.stringify({
       protocolVersion: '1',
       requestId: 'request-2',
@@ -314,28 +314,28 @@ describe('SDK Runtime transport', () => {
       payload: { packIdentity: 'approved-pack', manifest: '{"identity":"opaque"}' },
     });
 
-    expect(decodeDomainPackInstallResponse('request-2', response)).toEqual({
+    expect(decodeWorkSystemPackInstallResponse('request-2', response)).toEqual({
       ok: true,
       value: { packIdentity: 'approved-pack', manifest: '{"identity":"opaque"}' },
     });
   });
 
-  it('encodes pre-governance Domain Pack requests without Runtime context', () => {
-    expect(encodePreGovernanceDomainPackRequest('request-3', 'discoverEligibleDomainPacks', {
+  it('encodes pre-governance Work System Pack requests without Runtime context', () => {
+    expect(encodePreGovernanceWorkSystemPackRequest('request-3', 'discoverEligibleWorkSystemPacks', {
       principalId: 'principal-1', repositoryId: 'repository-1', payload: { source: 'licensee' },
     })).toEqual({
       ok: true,
       value: JSON.stringify({
-        protocolVersion: '1', requestId: 'request-3', operation: 'discoverEligibleDomainPacks',
+        protocolVersion: '1', requestId: 'request-3', operation: 'discoverEligibleWorkSystemPacks',
         principalId: 'principal-1', repositoryId: 'repository-1', payload: { source: 'licensee' },
       }),
     });
   });
 
-  it('fails closed for malformed pre-governance Domain Pack responses', () => {
-    expect(decodePreGovernanceDomainPackResponse('request-4', JSON.stringify({
+  it('fails closed for malformed pre-governance Work System Pack responses', () => {
+    expect(decodePreGovernanceWorkSystemPackResponse('request-4', JSON.stringify({
       protocolVersion: '1', requestId: 'other', ok: true, payload: {},
-    }))).toEqual({ ok: false, reason: 'SDK pre-governance Domain Pack response is invalid' });
+    }))).toEqual({ ok: false, reason: 'SDK pre-governance Work System Pack response is invalid' });
   });
 
   it('preserves the approved protocol request envelope', () => {

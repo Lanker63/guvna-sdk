@@ -133,7 +133,7 @@ export type RuntimeProtocolResponseEnvelope =
   | RuntimeProtocolResponse
   | RuntimeProtocolFailureResponse;
 
-export type DomainPackHostOperation = 'discoverDomainPacks' | 'installDomainPack';
+export type WorkSystemPackHostOperation = 'discoverWorkSystemPacks' | 'installWorkSystemPack';
 
 export interface AuthorityAdmissionRequestPayload {
   profile?: object;
@@ -184,68 +184,68 @@ export function decodeAuthorityAdmissionOutcome(requestId: string, payload: stri
   return { ok: true, value: parsed.value };
 }
 
-export type PreGovernanceDomainPackOperation =
-  | 'discoverEligibleDomainPacks'
-  | 'installEligibleDomainPack'
-  | 'reportDomainPackCompatibility';
+export type PreGovernanceWorkSystemPackOperation =
+  | 'discoverEligibleWorkSystemPacks'
+  | 'installEligibleWorkSystemPack'
+  | 'reportWorkSystemPackCompatibility';
 
-export interface PreGovernanceDomainPackRequest {
+export interface PreGovernanceWorkSystemPackRequest {
   protocolVersion: '1';
   requestId: string;
-  operation: PreGovernanceDomainPackOperation;
+  operation: PreGovernanceWorkSystemPackOperation;
   principalId: string;
   repositoryId: string;
   payload: unknown;
 }
 
-export type PreGovernanceDomainPackResponse =
+export type PreGovernanceWorkSystemPackResponse =
   | { protocolVersion: '1'; requestId: string; ok: true; payload: unknown }
   | { protocolVersion: '1'; requestId: string; ok: false; reason: string };
 
-export function encodePreGovernanceDomainPackRequest(
+export function encodePreGovernanceWorkSystemPackRequest(
   requestId: string,
-  operation: PreGovernanceDomainPackOperation,
+  operation: PreGovernanceWorkSystemPackOperation,
   request: { principalId: string; repositoryId: string; payload: unknown },
 ): SdkTransportResult<string> {
   if (!requestId) return { ok: false, reason: 'SDK request identifier is missing' };
   if (!request.principalId) return { ok: false, reason: 'SDK principal identifier is missing' };
   if (!request.repositoryId) return { ok: false, reason: 'SDK repository identifier is missing' };
-  return { ok: true, value: JSON.stringify({ protocolVersion: '1', requestId, operation, ...request } satisfies PreGovernanceDomainPackRequest) };
+  return { ok: true, value: JSON.stringify({ protocolVersion: '1', requestId, operation, ...request } satisfies PreGovernanceWorkSystemPackRequest) };
 }
 
-export function decodePreGovernanceDomainPackResponse(
+export function decodePreGovernanceWorkSystemPackResponse(
   requestId: string,
   payload: string,
-): SdkTransportResult<PreGovernanceDomainPackResponse> {
+): SdkTransportResult<PreGovernanceWorkSystemPackResponse> {
   const parsed = parseJson(payload);
-  if (!parsed.ok || !isPreGovernanceDomainPackResponse(parsed.value, requestId)) {
-    return { ok: false, reason: 'SDK pre-governance Domain Pack response is invalid' };
+  if (!parsed.ok || !isPreGovernanceWorkSystemPackResponse(parsed.value, requestId)) {
+    return { ok: false, reason: 'SDK pre-governance Work System Pack response is invalid' };
   }
   return { ok: true, value: parsed.value };
 }
 
-export interface DomainPackHostRequest {
+export interface WorkSystemPackHostRequest {
   protocolVersion: '1';
   requestId: string;
-  operation: DomainPackHostOperation;
+  operation: WorkSystemPackHostOperation;
   context: ApplicableSemanticContext;
   payload: unknown;
 }
 
-export interface DomainPackInstallResponse {
+export interface WorkSystemPackInstallResponse {
   packIdentity: string;
   manifest: string;
 }
 
-export function decodeDomainPackInstallResponse(
+export function decodeWorkSystemPackInstallResponse(
   requestId: string,
   payload: string,
-): SdkTransportResult<DomainPackInstallResponse> {
+): SdkTransportResult<WorkSystemPackInstallResponse> {
   if (!requestId) return { ok: false, reason: 'SDK request identifier is missing' };
   const parsed = parseJson(payload);
   if (!parsed.ok) return parsed;
-  if (!isDomainPackInstallResponseEnvelope(parsed.value, requestId)) {
-    return { ok: false, reason: 'SDK Domain Pack installation response is invalid' };
+  if (!isWorkSystemPackInstallResponseEnvelope(parsed.value, requestId)) {
+    return { ok: false, reason: 'SDK Work System Pack installation response is invalid' };
   }
   return { ok: true, value: parsed.value.payload };
 }
@@ -284,9 +284,9 @@ export function decodeAcceptanceRecordDiscoveryResponse(
     : { ok: false, reason: 'SDK acceptance record discovery response is invalid' };
 }
 
-export function encodeDomainPackRequest(
+export function encodeWorkSystemPackRequest(
   requestId: string,
-  operation: DomainPackHostOperation,
+  operation: WorkSystemPackHostOperation,
   context: ApplicableSemanticContext | null | undefined,
   payload: unknown,
   adapter: RuntimeProtocolAdapter,
@@ -302,7 +302,7 @@ export function encodeDomainPackRequest(
       operation,
       context: admission.context,
       payload,
-    } satisfies DomainPackHostRequest),
+    } satisfies WorkSystemPackHostRequest),
   };
 }
 
@@ -377,7 +377,7 @@ export function encodeRuntimeFailureResponse(
   };
 }
 
-export interface DomainPackEntitlementIssuanceRequestPayload {
+export interface WorkSystemPackEntitlementIssuanceRequestPayload {
   licenseeKind: 'organization' | 'user';
   licenseeId: string;
   packIdentity: string;
@@ -386,90 +386,54 @@ export interface DomainPackEntitlementIssuanceRequestPayload {
   repositoryScope: string;
 }
 
-export interface DomainPackEntitlementIssuanceRequest {
+export interface WorkSystemPackEntitlementIssuanceRequest {
   protocolVersion: '1';
   requestId: string;
-  operation: 'issueDomainPackEntitlement';
-  payload: DomainPackEntitlementIssuanceRequestPayload;
+  operation: 'issueWorkSystemPackEntitlement';
+  payload: WorkSystemPackEntitlementIssuanceRequestPayload;
 }
 
-export type DomainPackEntitlementIssuanceOutcome =
+export type WorkSystemPackEntitlementIssuanceOutcome =
   | { protocolVersion: '1'; requestId: string; outcome: 'issued'; grant: string; grantId: string; issuedAt: string; expiresAt: string }
-  | { protocolVersion: '1'; requestId: string; outcome: 'denied'; reason: string }
-  | { protocolVersion: '1'; requestId: string; outcome: 'unavailable'; reason: string };
+  | { protocolVersion: '1'; requestId: string; outcome: 'denied' | 'unavailable'; reason: string };
 
-/**
- * Encodes a request for the Runtime-owned `issueDomainPackEntitlement`
- * operation. The payload carries only pre-authorized inputs; grant identity,
- * issuance timestamp, and validity remain Runtime-controlled outputs, never
- * caller-supplied.
- */
-export function encodeDomainPackEntitlementIssuanceRequest(
+export function encodeWorkSystemPackEntitlementIssuanceRequest(
   requestId: string,
-  payload: DomainPackEntitlementIssuanceRequestPayload,
+  payload: WorkSystemPackEntitlementIssuanceRequestPayload,
 ): SdkTransportResult<string> {
   if (!requestId) return { ok: false, reason: 'SDK request identifier is missing' };
-  if (!isDomainPackEntitlementIssuanceRequestPayload(payload)) {
+  if (!isWorkSystemPackEntitlementIssuanceRequestPayload(payload)) {
     return { ok: false, reason: 'SDK entitlement issuance request payload is invalid' };
   }
-  return {
-    ok: true,
-    value: JSON.stringify({
-      protocolVersion: '1',
-      requestId,
-      operation: 'issueDomainPackEntitlement',
-      payload,
-    } satisfies DomainPackEntitlementIssuanceRequest),
-  };
+  return { ok: true, value: JSON.stringify({ protocolVersion: '1', requestId, operation: 'issueWorkSystemPackEntitlement', payload } satisfies WorkSystemPackEntitlementIssuanceRequest) };
 }
 
-export function decodeDomainPackEntitlementIssuanceRequest(
-  payload: string,
-): SdkTransportResult<DomainPackEntitlementIssuanceRequest> {
+export function decodeWorkSystemPackEntitlementIssuanceRequest(payload: string): SdkTransportResult<WorkSystemPackEntitlementIssuanceRequest> {
   const parsed = parseJson(payload);
   if (!parsed.ok) return parsed;
-  if (!isDomainPackEntitlementIssuanceRequestEnvelope(parsed.value)) {
-    return { ok: false, reason: 'SDK entitlement issuance request is invalid' };
-  }
-  return { ok: true, value: parsed.value };
+  return isWorkSystemPackEntitlementIssuanceRequestEnvelope(parsed.value)
+    ? { ok: true, value: parsed.value }
+    : { ok: false, reason: 'SDK entitlement issuance request is invalid' };
 }
 
-/** Encodes an explicit issued/denied/unavailable outcome, correlated to `requestId`. */
-export function encodeDomainPackEntitlementIssuanceOutcome(
-  outcome: DomainPackEntitlementIssuanceOutcome,
+export function encodeWorkSystemPackEntitlementIssuanceOutcome(
+  outcome: WorkSystemPackEntitlementIssuanceOutcome,
 ): SdkTransportResult<string> {
-  if (!isDomainPackEntitlementIssuanceOutcome(outcome)) {
-    return { ok: false, reason: 'SDK entitlement issuance outcome is invalid' };
-  }
-  return { ok: true, value: JSON.stringify(outcome) };
+  return isWorkSystemPackEntitlementIssuanceOutcome(outcome)
+    ? { ok: true, value: JSON.stringify(outcome) }
+    : { ok: false, reason: 'SDK entitlement issuance outcome is invalid' };
 }
 
-export function decodeDomainPackEntitlementIssuanceOutcome(
+export function decodeWorkSystemPackEntitlementIssuanceOutcome(
   requestId: string,
   payload: string,
-): SdkTransportResult<DomainPackEntitlementIssuanceOutcome> {
+): SdkTransportResult<WorkSystemPackEntitlementIssuanceOutcome> {
   if (!requestId) return { ok: false, reason: 'SDK request identifier is missing' };
   const parsed = parseJson(payload);
   if (!parsed.ok) return parsed;
-  if (!isDomainPackEntitlementIssuanceOutcome(parsed.value) || parsed.value.requestId !== requestId) {
-    return { ok: false, reason: 'SDK entitlement issuance outcome is invalid' };
-  }
-  return { ok: true, value: parsed.value };
-}
-
-function isDomainPackEntitlementIssuanceRequestPayload(
-  value: unknown,
-): value is DomainPackEntitlementIssuanceRequestPayload {
-  if (!isObject(value)) return false;
-  return (
-    (value.licenseeKind === 'organization' || value.licenseeKind === 'user')
-    && typeof value.licenseeId === 'string' && value.licenseeId.length > 0
-    && typeof value.packIdentity === 'string' && value.packIdentity.length > 0
-    && typeof value.packVersion === 'string' && value.packVersion.length > 0
-    && Array.isArray(value.operations) && value.operations.length > 0
-    && value.operations.every((item) => typeof item === 'string' && item.length > 0)
-    && typeof value.repositoryScope === 'string' && value.repositoryScope.length > 0
-  );
+  return isWorkSystemPackEntitlementIssuanceOutcome(parsed.value) && parsed.value.requestId === requestId
+    ? { ok: true, value: parsed.value }
+    : { ok: false, reason: 'SDK entitlement issuance outcome is invalid' };
 }
 
 function isAuthorityAdmissionRequestPayload(value: unknown): value is AuthorityAdmissionRequestPayload {
@@ -480,6 +444,21 @@ function isAuthorityAdmissionRequestPayload(value: unknown): value is AuthorityA
     && ['principalId', 'authorityId', 'bindingVersion', 'artifactId', 'algorithm', 'keyId', 'trustRootId', 'issuedAt', 'expiresAt', 'signature']
       .every((field) => typeof request[field] === 'string' && (request[field] as string).length > 0)
     && (request.profile === undefined || isObject(request.profile));
+}
+
+function isWorkSystemPackEntitlementIssuanceRequestPayload(
+  value: unknown,
+): value is WorkSystemPackEntitlementIssuanceRequestPayload {
+  if (!isObject(value)) return false;
+  return (
+    (value.licenseeKind === 'organization' || value.licenseeKind === 'user')
+    && typeof value.licenseeId === 'string' && value.licenseeId.length > 0
+    && typeof value.packIdentity === 'string' && value.packIdentity.length > 0
+    && typeof value.packVersion === 'string' && value.packVersion.length > 0
+    && Array.isArray(value.operations) && value.operations.length > 0
+    && value.operations.every((item) => typeof item === 'string' && item.length > 0)
+    && typeof value.repositoryScope === 'string' && value.repositoryScope.length > 0
+  );
 }
 
 function isAuthorityAdmissionRequest(value: unknown): value is AuthorityAdmissionRequest {
@@ -493,21 +472,21 @@ function isAuthorityAdmissionOutcome(value: unknown): value is AuthorityAdmissio
   return ['expired', 'revoked', 'unavailable', 'rejected'].includes(value.state) && typeof value.reason === 'string' && value.reason.length > 0;
 }
 
-function isDomainPackEntitlementIssuanceRequestEnvelope(
+function isWorkSystemPackEntitlementIssuanceRequestEnvelope(
   value: unknown,
-): value is DomainPackEntitlementIssuanceRequest {
+): value is WorkSystemPackEntitlementIssuanceRequest {
   return (
     isObject(value)
     && value.protocolVersion === '1'
     && typeof value.requestId === 'string' && value.requestId.length > 0
-    && value.operation === 'issueDomainPackEntitlement'
-    && isDomainPackEntitlementIssuanceRequestPayload(value.payload)
+    && value.operation === 'issueWorkSystemPackEntitlement'
+    && isWorkSystemPackEntitlementIssuanceRequestPayload(value.payload)
   );
 }
 
-function isDomainPackEntitlementIssuanceOutcome(
+function isWorkSystemPackEntitlementIssuanceOutcome(
   value: unknown,
-): value is DomainPackEntitlementIssuanceOutcome {
+): value is WorkSystemPackEntitlementIssuanceOutcome {
   if (!isObject(value) || value.protocolVersion !== '1' || typeof value.requestId !== 'string' || !value.requestId) {
     return false;
   }
@@ -555,10 +534,10 @@ function isRequestEnvelope(value: unknown): value is RuntimeProtocolRequest {
   );
 }
 
-function isDomainPackInstallResponseEnvelope(
+function isWorkSystemPackInstallResponseEnvelope(
   value: unknown,
   requestId: string,
-): value is { protocolVersion: '1'; requestId: string; ok: true; payload: DomainPackInstallResponse } {
+): value is { protocolVersion: '1'; requestId: string; ok: true; payload: WorkSystemPackInstallResponse } {
   if (typeof value !== 'object' || value === null) return false;
   const envelope = value as Record<string, unknown>;
   if (envelope.protocolVersion !== '1' || envelope.requestId !== requestId || envelope.ok !== true) return false;
@@ -568,10 +547,10 @@ function isDomainPackInstallResponseEnvelope(
     && typeof response.manifest === 'string';
 }
 
-function isPreGovernanceDomainPackResponse(
+function isPreGovernanceWorkSystemPackResponse(
   value: unknown,
   requestId: string,
-): value is PreGovernanceDomainPackResponse {
+): value is PreGovernanceWorkSystemPackResponse {
   if (!isObject(value) || value.protocolVersion !== '1' || value.requestId !== requestId) return false;
   if (value.ok === false) return typeof value.reason === 'string' && value.reason.length > 0;
   return value.ok === true && 'payload' in value;
