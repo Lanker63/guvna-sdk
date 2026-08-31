@@ -1,16 +1,9 @@
 import { describe, expect, it } from 'vitest';
 import {
-  decodeRuntimeOperation,
-  decodeRuntimeRequest,
-  encodeWorkSystemPackRequest,
   encodePreGovernanceWorkSystemPackRequest,
   decodePreGovernanceWorkSystemPackResponse,
   decodeWorkSystemPackInstallResponse,
   encodeRuntimeFailureResponse,
-  encodeRuntimeRequest,
-  encodeRuntimeResponse,
-  encodeRuntimeOperation,
-  encodeRuntimeOperationResult,
   decodeAcceptanceRecord,
   encodeAcceptanceRecord,
   decodeAcceptanceRecordDiscoveryResponse,
@@ -28,7 +21,6 @@ import {
   receiveRuntimeOperationResult,
   encodeRuntimeOperationRequest,
   encodeAcceptanceRecordDiscoveryResponse,
-  type RuntimeProtocolAdapter,
 } from '../src/index.js';
 
 const identity = { identityKind: 'semantic', value: 'contract-1' };
@@ -98,34 +90,18 @@ const operation = {
   },
 };
 
-const adapter: RuntimeProtocolAdapter = {
-  admitContext: (value) =>
-    value
-      ? { ok: true, context: value }
-      : { ok: false, reason: 'Runtime requires a valid applicable ratified semantic context' },
-  validateOperation: (value) =>
-    value &&
-    typeof value === 'object' &&
-    ['operationKind', 'identity', 'evaluation', 'outcome', 'attribution'].every(
-      (field) => field in value,
-    )
-      ? { valid: true }
-      : { valid: false, reason: 'Runtime operation structure is invalid' },
-  validateOperationResult: (value) =>
-    value && typeof value === 'object'
-      ? { valid: true }
-      : { valid: false, reason: 'Runtime operation result structure is invalid' },
-};
-
 describe('SDK Runtime transport', () => {
 
   it('encodes an adapter-free Runtime operation request and receives its result', async () => {
     const encoded = encodeRuntimeOperationRequest('operation-1', context, operation);
     expect(encoded.ok).toBe(true);
     const result = await receiveRuntimeOperationResult(JSON.parse(encoded.ok ? encoded.value : '{}'), 'operation-1', {
-      send: async () => JSON.stringify({ protocolVersion: '1', requestId: 'operation-1', ok: true, payload: { ok: true, value: {} } }),
+      send: async () => JSON.stringify({
+        protocolVersion: '1', requestId: 'operation-1', ok: true,
+        payload: { ok: false, failure: { failureKind: 'unauthorized-input', input: operation.identity, reason: 'not admitted' } },
+      }),
     });
-    expect(result).toEqual({ ok: true, result: { ok: true, value: {} } });
+    expect(result).toEqual({ ok: true, result: { ok: false, failure: { failureKind: 'unauthorized-input', input: operation.identity, reason: 'not admitted' } } });
   });
 
   it('fails closed for malformed or refused remote Runtime results', async () => {
@@ -170,7 +146,7 @@ describe('SDK Runtime transport', () => {
         });
       },
     };
-    const result = await requestApplicableSemanticContext({ contractIdentity: identity, contractVersion: '1.0.0', scope: scope.identity }, 'admission-1', transport, adapter);
+    const result = await requestApplicableSemanticContext({ contractIdentity: identity, contractVersion: '1.0.0', scope: scope.identity }, 'admission-1', transport);
 
     expect(result).toEqual({
       ok: true,
@@ -193,12 +169,12 @@ describe('SDK Runtime transport', () => {
   it('fails closed on refusal and mismatched admission responses', async () => {
     const refusal = await requestApplicableSemanticContext({}, 'admission-1', {
       send: async () => JSON.stringify({ protocolVersion: '1', requestId: 'admission-1', ok: false, reason: 'No applicable contract' }),
-    }, adapter);
+    });
     expect(refusal).toEqual({ ok: false, reason: 'No applicable contract' });
 
     const mismatch = await requestApplicableSemanticContext({}, 'admission-1', {
       send: async () => JSON.stringify({ protocolVersion: '1', requestId: 'other', ok: true, payload: context }),
-    }, adapter);
+    });
     expect(mismatch).toEqual({ ok: false, reason: 'SDK admission response is invalid' });
   });
 
@@ -292,20 +268,6 @@ describe('SDK Runtime transport', () => {
     }))).toEqual({ ok: false, reason: 'SDK acceptance record is invalid' });
   });
 
-  it('encodes opaque Work System Pack host requests without interpreting payloads', () => {
-    const payload = { source: 'approved-source', manifest: { opaque: true } };
-    expect(encodeWorkSystemPackRequest('request-1', 'discoverWorkSystemPacks', context, payload, adapter)).toEqual({
-      ok: true,
-      value: JSON.stringify({
-        protocolVersion: '1',
-        requestId: 'request-1',
-        operation: 'discoverWorkSystemPacks',
-        context,
-        payload,
-      }),
-    });
-  });
-
   it('decodes an opaque Work System Pack installation response', () => {
     const response = JSON.stringify({
       protocolVersion: '1',
@@ -339,7 +301,7 @@ describe('SDK Runtime transport', () => {
   });
 
   it('preserves the approved protocol request envelope', () => {
-    const encoded = encodeRuntimeRequest('request-1', context, operation, adapter);
+    const encoded = encodeRuntimeOperationRequest('request-1', context, operation);
     expect(encoded).toEqual({
       ok: true,
       value: JSON.stringify({
@@ -350,45 +312,11 @@ describe('SDK Runtime transport', () => {
         payload: operation,
       }),
     });
-    expect(encoded.ok && decodeRuntimeRequest(context, encoded.value, adapter)).toEqual({
-      ok: true,
-      value: {
-        protocolVersion: '1',
-        requestId: 'request-1',
-        operation: 'recordEvidence',
-        context,
-        payload: operation,
-      },
-    });
-  });
-
-  it('serializes the admitted context in the Runtime request envelope', () => {
-    const admittedContext = { ...context, projectionVersion: 'admitted-version' };
-    const admittingAdapter = {
-      ...adapter,
-      admitContext: () => ({ ok: true as const, context: admittedContext }),
-    };
-
-    const encoded = encodeRuntimeRequest('request-admitted', context, operation, admittingAdapter);
-
-    expect(encoded).toEqual({
-      ok: true,
-      value: JSON.stringify({
-        protocolVersion: '1',
-        requestId: 'request-admitted',
-        operation: 'recordEvidence',
-        context: admittedContext,
-        payload: operation,
-      }),
-    });
+    expect(encoded.ok).toBe(true);
   });
 
   it('preserves correlated successful and failed response envelopes', () => {
     const result = { ok: true as const, value: operation };
-    expect(encodeRuntimeResponse('request-1', context, result, adapter)).toEqual({
-      ok: true,
-      value: JSON.stringify({ protocolVersion: '1', requestId: 'request-1', ok: true, payload: result }),
-    });
     expect(encodeRuntimeFailureResponse('request-1', 'Runtime unavailable')).toEqual({
       ok: true,
       value: JSON.stringify({ protocolVersion: '1', requestId: 'request-1', ok: false, reason: 'Runtime unavailable' }),
@@ -396,37 +324,19 @@ describe('SDK Runtime transport', () => {
   });
 
   it('rejects requests without correlation identifiers or with unsupported protocol versions', () => {
-    expect(encodeRuntimeRequest('', context, operation, adapter)).toEqual({
+    expect(encodeRuntimeOperationRequest('', context, operation)).toEqual({
       ok: false,
       reason: 'SDK request identifier is missing',
     });
-    expect(decodeRuntimeRequest(context, JSON.stringify({ protocolVersion: '2' }), adapter)).toEqual({
-      ok: false,
-      reason: 'SDK Runtime request envelope is invalid',
-    });
-  });
-
-  it('uses the supplied runtime protocol adapter', () => {
-    expect(encodeRuntimeOperation(context, operation, adapter)).toEqual({
-      ok: true,
-      value: JSON.stringify(operation),
-    });
-  });
-
-  it('fails closed before encoding without an admitted context', () => {
-    expect(encodeRuntimeOperation(undefined, operation, adapter)).toEqual({
+    expect(encodeRuntimeOperationRequest('request-1', undefined, operation)).toEqual({
       ok: false,
       reason: 'Runtime requires a valid applicable ratified semantic context',
     });
   });
 
   it('preserves an approved Runtime operation through transport', () => {
-    const encoded = encodeRuntimeOperation(context, operation, adapter);
-    expect(encoded).toEqual({ ok: true, value: JSON.stringify(operation) });
-    expect(encoded.ok && decodeRuntimeOperation(context, encoded.value, adapter)).toEqual({
-      ok: true,
-      value: operation,
-    });
+    const encoded = encodeRuntimeOperationRequest('request-1', context, operation);
+    expect(encoded.ok).toBe(true);
   });
 
   it('preserves Runtime result attribution through transport', () => {
@@ -435,18 +345,23 @@ describe('SDK Runtime transport', () => {
       input: operation.identity,
       reason: 'not admitted',
     } };
-    const encoded = encodeRuntimeOperationResult(context, result, adapter);
-    expect(encoded.ok && JSON.parse(encoded.value)).toEqual(result);
+    expect(result).toEqual({ ok: false, failure: { failureKind: 'unauthorized-input', input: operation.identity, reason: 'not admitted' } });
+  });
+
+  it('fails closed for a deeply malformed Runtime result', async () => {
+    const result = await receiveRuntimeOperationResult({}, 'operation-4', {
+      send: async () => JSON.stringify({
+        protocolVersion: '1', requestId: 'operation-4', ok: true,
+        payload: { ok: true, value: { resultKind: 'noDirective', identity: operation.identity, attribution: {} } },
+      }),
+    });
+    expect(result).toEqual({ ok: false, reason: 'SDK Runtime operation response is invalid' });
   });
 
   it('rejects malformed payloads after context admission', () => {
-    expect(decodeRuntimeOperation(context, '{', adapter)).toEqual({
+    expect(encodeRuntimeOperationRequest('request-1', context, { operationKind: 'evaluate' } as never)).toEqual({
       ok: false,
-      reason: 'SDK Runtime operation payload is invalid JSON',
-    });
-    expect(decodeRuntimeOperation(context, JSON.stringify({ operationKind: 'evaluate' }), adapter)).toEqual({
-      ok: false,
-      reason: 'Runtime operation structure is invalid',
+      reason: 'SDK Runtime operation is invalid',
     });
   });
 });

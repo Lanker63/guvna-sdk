@@ -1,6 +1,83 @@
-export type ApplicableSemanticContext = object;
-export type RuntimeOperation = object;
-export type RuntimeOperationResult = object;
+export interface SemanticIdentity { identityKind: string; value: string }
+export interface SemanticRef { identity: SemanticIdentity }
+export interface SemanticScope { identity: SemanticIdentity; meaning: { statement: string; terms: SemanticRef[] } }
+export interface ProvenanceRef { sourceIdentity: SemanticIdentity; sourcePath?: string; sourceSection?: string }
+export interface ConditionRef { identity: SemanticIdentity; condition: { statement: string; terms: SemanticRef[] }; provenance: ProvenanceRef[] }
+export interface RatificationRecord {
+  candidateContractIdentity: SemanticIdentity;
+  candidateContractVersion: string;
+  validationEvidence: SemanticRef;
+  validationResult: 'conformant';
+  ratificationEvent: SemanticRef;
+  ratifiedContractVersion: string;
+  applicableScope: SemanticScope;
+  supersession?: SemanticRef;
+  retirement?: SemanticRef;
+}
+
+export interface ApplicableSemanticContext {
+  contract: {
+    identity: SemanticIdentity;
+    version: { value: string; semanticIdentity: SemanticRef; scope: SemanticScope };
+    contractKind: 'semantic' | 'runtime' | 'sdk' | 'projection';
+    lifecycle: { lifecycleState: SemanticRef; transitions: SemanticRef[] };
+    applicability: {
+      applicable: boolean | 'indeterminate';
+      scope: SemanticScope;
+      conditions: ConditionRef[];
+      authorityDecision?: SemanticRef;
+      provenance: ProvenanceRef[];
+    };
+    ratification: {
+      ratified: boolean;
+      authorityDecision?: SemanticRef;
+      requiresHumanAuthority: boolean;
+      provenance: ProvenanceRef[];
+      record?: RatificationRecord;
+    };
+    provenance: ProvenanceRef[];
+  };
+  identity: SemanticIdentity;
+  version: string;
+  scope: SemanticScope;
+}
+
+interface ContractAttribution { contractIdentity: SemanticIdentity; contractVersion: string; scope: SemanticScope; provenance: ProvenanceRef[] }
+interface DirectiveAttribution extends ContractAttribution { executionContext: SemanticRef; authorityBasis: SemanticRef[] }
+interface EvaluationResult { identity: SemanticIdentity; outcome: Outcome; attribution: DirectiveAttribution }
+interface Outcome { outcomeKind: 'conformant' | 'nonConformant' | 'indeterminate'; findings: SemanticRef[] }
+interface RuntimeEvaluationInput {
+  context: ApplicableSemanticContext;
+  semanticEvidence: { identity: SemanticIdentity; ir: SemanticRef; scope: SemanticScope; provenance: ProvenanceRef[] };
+  execution: { identity: SemanticIdentity; state: JsonValue; provenance: ProvenanceRef[] };
+  authority: { identity: SemanticIdentity; decisions: SemanticRef[]; scope: SemanticScope; provenance: ProvenanceRef[] };
+  provenance: { identity: SemanticIdentity; sources: ProvenanceRef[]; transformations: SemanticRef[] };
+}
+interface Directive {
+  directiveKind: 'diagnostic' | 'authorityRequired' | 'operationRequested';
+  identity: SemanticIdentity;
+  severity?: 'error' | 'warning';
+  code?: string;
+  message?: string;
+  requiredDecision?: SemanticRef;
+  scope?: SemanticScope;
+  operation?: SemanticRef;
+  inputs?: JsonValue;
+  attribution: DirectiveAttribution;
+}
+interface NoDirective { resultKind: 'noDirective'; identity: SemanticIdentity; attribution: DirectiveAttribution }
+interface Evidence { identity: SemanticIdentity; operation: SemanticRef; outcome: Outcome; attribution: ContractAttribution; executionContext: SemanticRef }
+interface Failure { failureKind: 'missing-input' | 'ambiguous-input' | 'invalid-input' | 'incompatible-input' | 'unauthorized-input'; input: SemanticIdentity; reason: string }
+
+export type RuntimeOperation =
+  | { operationKind: 'evaluate'; identity: SemanticIdentity; input: RuntimeEvaluationInput; attribution: ContractAttribution }
+  | { operationKind: 'produceDirective'; identity: SemanticIdentity; evaluation: EvaluationResult; attribution: ContractAttribution }
+  | { operationKind: 'recordEvidence'; identity: SemanticIdentity; evaluation: EvaluationResult; outcome: Outcome; attribution: ContractAttribution };
+export type RuntimeOperationResult =
+  | { ok: true; value: EvaluationResult | Directive | NoDirective | Evidence }
+  | { ok: false; failure: Failure };
+
+type JsonValue = null | boolean | number | string | JsonValue[] | { [key: string]: JsonValue };
 
 export type AcceptanceRecordStatus = 'candidate' | 'accepted' | 'rejected' | 'superseded';
 export type AcceptanceSubjectKind = 'single-artifact' | 'change-set';
@@ -39,18 +116,6 @@ export interface AcceptanceRecordDiscoveryResponse {
   contractVersion: '1';
   governedRepositoryId: string;
   records: AcceptanceRecord[];
-}
-
-export type RuntimeValidationResult =
-  | { valid: true }
-  | { valid: false; reason: string };
-
-export interface RuntimeProtocolAdapter {
-  admitContext(
-    context: ApplicableSemanticContext | null | undefined,
-  ): SdkAdmissionResult;
-  validateOperation(value: unknown): RuntimeValidationResult;
-  validateOperationResult(value: unknown): RuntimeValidationResult;
 }
 
 export type SdkAdmissionResult =
@@ -377,87 +442,6 @@ export function decodeAcceptanceRecordDiscoveryResponse(
     : { ok: false, reason: 'SDK acceptance record discovery response is invalid' };
 }
 
-export function encodeWorkSystemPackRequest(
-  requestId: string,
-  operation: WorkSystemPackHostOperation,
-  context: ApplicableSemanticContext | null | undefined,
-  payload: unknown,
-  adapter: RuntimeProtocolAdapter,
-): SdkTransportResult<string> {
-  const admission = admitSdkContext(context, adapter);
-  if (!admission.ok) return admission;
-  if (!requestId) return { ok: false, reason: 'SDK request identifier is missing' };
-  return {
-    ok: true,
-    value: JSON.stringify({
-      protocolVersion: '1',
-      requestId,
-      operation,
-      context: admission.context,
-      payload,
-    } satisfies WorkSystemPackHostRequest),
-  };
-}
-
-export function encodeRuntimeRequest(
-  requestId: string,
-  context: ApplicableSemanticContext | null | undefined,
-  operation: RuntimeOperation | null | undefined,
-  adapter: RuntimeProtocolAdapter,
-): SdkTransportResult<string> {
-  const admission = admitSdkContext(context, adapter);
-  if (!admission.ok) return admission;
-  const encodedOperation = encodeRuntimeOperation(context, operation, adapter);
-  if (!encodedOperation.ok) return encodedOperation;
-  if (!requestId) return { ok: false, reason: 'SDK request identifier is missing' };
-  if (!operation || typeof operation !== 'object' || !('operationKind' in operation))
-    return { ok: false, reason: 'SDK Runtime operation is missing' };
-  const runtimeOperation = operation as RuntimeOperation & { operationKind: string };
-  return {
-    ok: true,
-    value: JSON.stringify({
-      protocolVersion: '1',
-      requestId,
-      operation: runtimeOperation.operationKind,
-      context: admission.context,
-      payload: operation,
-    } satisfies RuntimeProtocolRequest),
-  };
-}
-
-export function decodeRuntimeRequest(
-  context: ApplicableSemanticContext | null | undefined,
-  payload: string,
-  adapter: RuntimeProtocolAdapter,
-): SdkTransportResult<RuntimeProtocolRequest> {
-  const admission = admitSdkContext(context, adapter);
-  if (!admission.ok) return admission;
-  const parsed = parseJson(payload);
-  if (!parsed.ok) return parsed;
-  if (!isRequestEnvelope(parsed.value))
-    return { ok: false, reason: 'SDK Runtime request envelope is invalid' };
-  const operation = decodeRuntimeOperation(context, JSON.stringify(parsed.value.payload), adapter);
-  if (!operation.ok) return operation;
-  return { ok: true, value: { ...parsed.value, payload: operation.value } };
-}
-
-export function encodeRuntimeResponse(
-  requestId: string,
-  context: ApplicableSemanticContext | null | undefined,
-  result: RuntimeOperationResult | null | undefined,
-  adapter: RuntimeProtocolAdapter,
-): SdkTransportResult<string> {
-  const encodedResult = encodeRuntimeOperationResult(context, result, adapter);
-  if (!encodedResult.ok) return encodedResult;
-  if (!requestId) return { ok: false, reason: 'SDK request identifier is missing' };
-  if (result === null || result === undefined)
-    return { ok: false, reason: 'SDK Runtime operation result is missing' };
-  return {
-    ok: true,
-    value: JSON.stringify({ protocolVersion: '1', requestId, ok: true, payload: result } satisfies RuntimeProtocolResponse),
-  };
-}
-
 export function encodeRuntimeFailureResponse(
   requestId: string,
   reason: string,
@@ -621,11 +605,103 @@ function isObject(value: unknown): value is Record<string, unknown> {
 }
 
 function isRuntimeOperationShape(value: unknown): value is RuntimeOperation {
-  return isObject(value) && (value.operationKind === 'evaluate' || value.operationKind === 'produceDirective' || value.operationKind === 'recordEvidence');
+  if (!isObject(value) || !isIdentityShape(value.identity) || !isAttribution(value.attribution)) return false;
+  if (value.operationKind === 'evaluate') {
+    return isObject(value.input) && isApplicableContextShape(value.input.context)
+      && isEvidenceInput(value.input.semanticEvidence) && isExecutionInput(value.input.execution)
+      && isAuthorityInput(value.input.authority) && isProvenanceInput(value.input.provenance);
+  }
+  if (value.operationKind === 'produceDirective') return isEvaluationResult(value.evaluation);
+  if (value.operationKind === 'recordEvidence') return isEvaluationResult(value.evaluation) && isOutcome(value.outcome);
+  return false;
 }
 
 function isRuntimeOperationResultShape(value: unknown): value is RuntimeOperationResult {
-  return isObject(value) && typeof value.ok === 'boolean' && (value.ok ? 'value' in value : 'failure' in value);
+  if (!isObject(value) || typeof value.ok !== 'boolean') return false;
+  return value.ok ? isResultValue(value.value) && !('failure' in value) : isFailure(value.failure) && !('value' in value);
+}
+
+function isApplicableContextShape(value: unknown): value is ApplicableSemanticContext {
+  if (!isObject(value) || !isIdentityShape(value.identity) || !isNonEmptyString(value.version)
+    || !isScope(value.scope) || !isObject(value.contract) || !isIdentityShape(value.contract.identity)
+    || !isObject(value.contract.version) || !isNonEmptyString(value.contract.version.value)
+    || !isObject(value.contract.lifecycle) || !isRef(value.contract.lifecycle.lifecycleState)
+    || !Array.isArray(value.contract.lifecycle.transitions)
+    || !isObject(value.contract.applicability) || !isScope(value.contract.applicability.scope)
+    || !Array.isArray(value.contract.applicability.conditions) || !isObject(value.contract.ratification)
+    || !Array.isArray(value.contract.ratification.provenance) || !Array.isArray(value.contract.provenance)) return false;
+  return value.contract.identity.identityKind === value.identity.identityKind
+    && value.contract.identity.value === value.identity.value
+    && value.contract.version.value === value.version
+    && isRef(value.contract.version.semanticIdentity)
+    && isScope(value.contract.version.scope)
+    && value.contract.applicability.applicable === true
+    && value.contract.ratification.ratified === true
+    && value.contract.ratification.requiresHumanAuthority === true
+    && isRef(value.contract.applicability.authorityDecision)
+    && isRef(value.contract.ratification.authorityDecision)
+    && isObject(value.contract.ratification.record);
+}
+
+function isScope(value: unknown): value is SemanticScope {
+  return isObject(value) && isIdentityShape(value.identity) && isObject(value.meaning)
+    && isNonEmptyString(value.meaning.statement) && Array.isArray(value.meaning.terms)
+    && value.meaning.terms.every(isRef);
+}
+
+function isRef(value: unknown): value is SemanticRef { return isObject(value) && isIdentityShape(value.identity); }
+function isIdentityShape(value: unknown): value is SemanticIdentity {
+  return isObject(value) && isNonEmptyString(value.identityKind) && isNonEmptyString(value.value);
+}
+function isNonEmptyString(value: unknown): value is string { return typeof value === 'string' && value.trim().length > 0; }
+function isAttribution(value: unknown): value is ContractAttribution {
+  return isObject(value) && isIdentityShape(value.contractIdentity) && isNonEmptyString(value.contractVersion)
+    && isScope(value.scope) && Array.isArray(value.provenance) && value.provenance.every(isProvenanceRef);
+}
+function isProvenanceRef(value: unknown): value is ProvenanceRef {
+  return isObject(value) && isIdentityShape(value.sourceIdentity)
+    && (value.sourcePath === undefined || isNonEmptyString(value.sourcePath))
+    && (value.sourceSection === undefined || isNonEmptyString(value.sourceSection));
+}
+function isEvidenceInput(value: unknown): boolean {
+  return isObject(value) && isIdentityShape(value.identity) && isRef(value.ir) && isScope(value.scope)
+    && Array.isArray(value.provenance) && value.provenance.every(isProvenanceRef);
+}
+function isExecutionInput(value: unknown): boolean {
+  return isObject(value) && isIdentityShape(value.identity) && isJsonValue(value.state)
+    && Array.isArray(value.provenance) && value.provenance.every(isProvenanceRef);
+}
+function isAuthorityInput(value: unknown): boolean {
+  return isObject(value) && isIdentityShape(value.identity) && Array.isArray(value.decisions)
+    && value.decisions.every(isRef) && isScope(value.scope) && Array.isArray(value.provenance)
+    && value.provenance.every(isProvenanceRef);
+}
+function isProvenanceInput(value: unknown): boolean {
+  return isObject(value) && isIdentityShape(value.identity) && Array.isArray(value.sources)
+    && value.sources.every(isProvenanceRef) && Array.isArray(value.transformations) && value.transformations.every(isRef);
+}
+function isEvaluationResult(value: unknown): boolean {
+  return isObject(value) && isIdentityShape(value.identity) && isOutcome(value.outcome) && isDirectiveAttribution(value.attribution);
+}
+function isDirectiveAttribution(value: unknown): boolean {
+  if (!isObject(value) || !isAttribution(value)) return false;
+  return isRef(value.executionContext) && Array.isArray(value.authorityBasis) && value.authorityBasis.every(isRef);
+}
+function isOutcome(value: unknown): boolean { return isObject(value) && ['conformant', 'nonConformant', 'indeterminate'].includes(String(value.outcomeKind)) && Array.isArray(value.findings) && value.findings.every(isRef); }
+function isResultValue(value: unknown): boolean {
+  if (isEvaluationResult(value)) return true;
+  if (!isObject(value) || !isIdentityShape(value.identity)) return false;
+  if (value.resultKind === 'noDirective') return isDirectiveAttribution(value.attribution);
+  if (value.directiveKind === 'diagnostic') return isDirectiveAttribution(value.attribution)
+    && (value.severity === 'error' || value.severity === 'warning') && isNonEmptyString(value.code) && isNonEmptyString(value.message);
+  if (value.directiveKind === 'authorityRequired') return isDirectiveAttribution(value.attribution) && isRef(value.requiredDecision) && isScope(value.scope);
+  if (value.directiveKind === 'operationRequested') return isDirectiveAttribution(value.attribution) && isRef(value.operation) && isJsonValue(value.inputs);
+  return isRef(value.operation) && isOutcome(value.outcome) && isAttribution(value.attribution) && isRef(value.executionContext);
+}
+function isFailure(value: unknown): boolean { return isObject(value) && ['missing-input', 'ambiguous-input', 'invalid-input', 'incompatible-input', 'unauthorized-input'].includes(String(value.failureKind)) && isIdentityShape(value.input) && isNonEmptyString(value.reason); }
+function isJsonValue(value: unknown): value is JsonValue {
+  if (value === null || typeof value === 'string' || typeof value === 'boolean' || typeof value === 'number') return true;
+  return Array.isArray(value) ? value.every(isJsonValue) : isObject(value) && Object.values(value).every(isJsonValue);
 }
 
 function isRequestEnvelope(value: unknown): value is RuntimeProtocolRequest {
@@ -892,18 +968,10 @@ function isSubmitAcceptanceDecisionRequest(value: unknown): value is SubmitAccep
     && typeof (authority as Record<string, unknown>).verifiedAt === 'string';
 }
 
-export function admitSdkContext(
-  context: ApplicableSemanticContext | null | undefined,
-  adapter: RuntimeProtocolAdapter,
-): SdkAdmissionResult {
-  return adapter.admitContext(context);
-}
-
 export async function requestApplicableSemanticContext(
   request: unknown,
   requestId: string,
   transport: RuntimeTransport,
-  adapter: RuntimeProtocolAdapter,
   signal?: AbortSignal,
 ): Promise<SdkAdmissionResult> {
   if (!requestId) return { ok: false, reason: 'SDK request identifier is missing' };
@@ -923,7 +991,7 @@ export async function requestApplicableSemanticContext(
   if (!isAdmissionResponse(value, requestId)) {
     return { ok: false, reason: isAdmissionFailure(value, requestId) ? value.reason : 'SDK admission response is invalid' };
   }
-  const admission = admitSdkContext(value.payload, adapter);
+  const admission = admitSdkContext(value.payload);
   return admission.ok
     ? { ...admission, ...(value.provenance ? { provenance: value.provenance } : {}) }
     : admission;
@@ -952,7 +1020,10 @@ export async function receiveRuntimeAdmissionDecision(
   if (!isAdmissionResponse(value, requestId) || !value.provenance) {
     return { ok: false, reason: isAdmissionFailure(value, requestId) ? value.reason : 'SDK admission response is invalid' };
   }
-  return { ok: true, context: value.payload, provenance: value.provenance };
+  const admission = admitSdkContext(value.payload);
+  return admission.ok
+    ? { ok: true, context: admission.context, provenance: value.provenance }
+    : admission;
 }
 
 export function encodeRuntimeOperationRequest(
@@ -961,12 +1032,13 @@ export function encodeRuntimeOperationRequest(
   operation: RuntimeOperation | null | undefined,
 ): SdkTransportResult<string> {
   if (!requestId) return { ok: false, reason: 'SDK request identifier is missing' };
-  if (!isObject(context)) return { ok: false, reason: 'Runtime context is not admitted' };
+  const admission = admitSdkContext(context);
+  if (!admission.ok) return admission;
   if (!isRuntimeOperationShape(operation)) return { ok: false, reason: 'SDK Runtime operation is invalid' };
   const operationValue = operation as { operationKind: string };
   return {
     ok: true,
-    value: JSON.stringify({ protocolVersion: '1', requestId, operation: operationValue.operationKind, context, payload: operation }),
+    value: JSON.stringify({ protocolVersion: '1', requestId, operation: operationValue.operationKind, context: admission.context, payload: operation }),
   };
 }
 
@@ -991,84 +1063,6 @@ export async function receiveRuntimeOperationResult(
   return { ok: true, result: parsed.value.payload as RuntimeOperationResult };
 }
 
-export function encodeRuntimeOperation(
-  context: ApplicableSemanticContext | null | undefined,
-  operation: RuntimeOperation | null | undefined,
-  adapter: RuntimeProtocolAdapter,
-): SdkTransportResult<string> {
-  const admission = admitSdkContext(context, adapter);
-  if (!admission.ok) return admission;
-  const validation = adapter.validateOperation(operation);
-  if (!validation.valid) return { ok: false, reason: validation.reason };
-  return { ok: true, value: JSON.stringify(operation) };
-}
-
-export function decodeRuntimeOperation(
-  context: ApplicableSemanticContext | null | undefined,
-  payload: string,
-  adapter: RuntimeProtocolAdapter,
-): SdkTransportResult<RuntimeOperation> {
-  const admission = admitSdkContext(context, adapter);
-  if (!admission.ok) return admission;
-  let value: unknown;
-  try {
-    value = JSON.parse(payload);
-  } catch {
-    return { ok: false, reason: 'SDK Runtime operation payload is invalid JSON' };
-  }
-  const validation = adapter.validateOperation(value);
-  if (!validation.valid) return { ok: false, reason: validation.reason };
-  return isRuntimeOperation(value, adapter)
-    ? { ok: true, value }
-    : { ok: false, reason: 'SDK Runtime operation payload is invalid' };
-}
-
-export function encodeRuntimeOperationResult(
-  context: ApplicableSemanticContext | null | undefined,
-  result: RuntimeOperationResult | null | undefined,
-  adapter: RuntimeProtocolAdapter,
-): SdkTransportResult<string> {
-  const admission = admitSdkContext(context, adapter);
-  if (!admission.ok) return admission;
-  const validation = adapter.validateOperationResult(result);
-  if (!validation.valid) return { ok: false, reason: validation.reason };
-  return { ok: true, value: JSON.stringify(result) };
-}
-
-export function decodeRuntimeOperationResult(
-  context: ApplicableSemanticContext | null | undefined,
-  payload: string,
-  adapter: RuntimeProtocolAdapter,
-): SdkTransportResult<RuntimeOperationResult> {
-  const admission = admitSdkContext(context, adapter);
-  if (!admission.ok) return admission;
-  let value: unknown;
-  try {
-    value = JSON.parse(payload);
-  } catch {
-    return { ok: false, reason: 'SDK Runtime operation result payload is invalid JSON' };
-  }
-  const validation = adapter.validateOperationResult(value);
-  if (!validation.valid) return { ok: false, reason: validation.reason };
-  return isRuntimeOperationResult(value, adapter)
-    ? { ok: true, value }
-    : { ok: false, reason: 'SDK Runtime operation result payload is invalid' };
-}
-
-function isRuntimeOperation(
-  value: unknown,
-  adapter: RuntimeProtocolAdapter,
-): value is RuntimeOperation {
-  return adapter.validateOperation(value).valid;
-}
-
-function isRuntimeOperationResult(
-  value: unknown,
-  adapter: RuntimeProtocolAdapter,
-): value is RuntimeOperationResult {
-  return adapter.validateOperationResult(value).valid;
-}
-
 function isAdmissionResponse(value: unknown, requestId: string): value is RuntimeAdmissionResponse {
   if (typeof value !== 'object' || value === null) return false;
   const response = value as Record<string, unknown>;
@@ -1086,6 +1080,12 @@ function isAdmissionProvenance(value: unknown): value is RuntimeAdmissionProvena
     && isFreshness(provenance.freshness);
 }
 
+function admitSdkContext(context: ApplicableSemanticContext | null | undefined): SdkAdmissionResult {
+  return isApplicableContextShape(context)
+    ? { ok: true, context }
+    : { ok: false, reason: 'Runtime requires a valid applicable ratified semantic context' };
+}
+
   function isFreshness(value: unknown): value is RuntimeAdmissionProvenance['freshness'] {
     if (typeof value !== 'object' || value === null) return false;
     const freshness = value as Record<string, unknown>;
@@ -1095,13 +1095,6 @@ function isAdmissionProvenance(value: unknown): value is RuntimeAdmissionProvena
     && (freshness.currentProjectionVersion === undefined || typeof freshness.currentProjectionVersion === 'string')
     && (freshness.verifiedBy === undefined || isIdentityShape(freshness.verifiedBy));
   }
-
-function isIdentityShape(value: unknown): value is { identityKind: string; value: string } {
-  if (typeof value !== 'object' || value === null) return false;
-  const identity = value as Record<string, unknown>;
-  return typeof identity.identityKind === 'string' && identity.identityKind.length > 0
-    && typeof identity.value === 'string' && identity.value.length > 0;
-}
 
 function isAdmissionFailure(value: unknown, requestId: string): value is RuntimeAdmissionFailureResponse {
   if (typeof value !== 'object' || value === null) return false;
