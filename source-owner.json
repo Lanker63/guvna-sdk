@@ -1,0 +1,26 @@
+{
+  "schemaVersion": "1",
+  "repository": {
+    "identity": "guvna-sdk",
+    "scope": "source-release"
+  },
+  "sourceOwner": {
+    "identifier": "lanker63@gmail.com",
+    "displayName": "Mike Langstaff"
+  },
+  "authority": {
+    "decision": "source-release-owner",
+    "effectiveFrom": "2026-08-31",
+    "ratifiedBy": "lanker63@gmail.com",
+    "ratifiedAtRevision": "commit-sha"
+  },
+  "policy": {
+    "repositoryAndRevisionSelectedBy": "source-owner",
+    "publicationOwnedBy": "source-owner",
+    "retentionOwnedBy": "source-owner",
+    "rollbackRetentionOwnedBy": "source-owner",
+    "releaseApprovalOwnedBy": "source-owner",
+    "compatibilityAcceptanceOwnedBy": "source-owner",
+    "handoffAndEscalationOwnedBy": "source-owner"
+  }
+}
