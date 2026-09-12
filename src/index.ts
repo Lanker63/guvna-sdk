@@ -145,7 +145,13 @@ export interface RuntimeAdmissionRequest {
   protocolVersion: '1';
   requestId: string;
   operation: 'admitApplicableSemanticContext';
-  payload: unknown;
+  payload: RuntimeAdmissionSelectionRequest;
+}
+
+export interface RuntimeAdmissionSelectionRequest {
+  contractIdentity: SemanticIdentity;
+  contractVersion: string;
+  scope: SemanticScope;
 }
 
 export interface RuntimeAdmissionResponse {
@@ -975,6 +981,7 @@ export async function requestApplicableSemanticContext(
   signal?: AbortSignal,
 ): Promise<SdkAdmissionResult> {
   if (!requestId) return { ok: false, reason: 'SDK request identifier is missing' };
+  if (!isRuntimeAdmissionSelectionRequest(request)) return { ok: false, reason: 'SDK admission request is invalid' };
   const payload = JSON.stringify({
     protocolVersion: '1',
     requestId,
@@ -1004,6 +1011,7 @@ export async function receiveRuntimeAdmissionDecision(
   signal?: AbortSignal,
 ): Promise<RemoteAdmissionResult> {
   if (!requestId) return { ok: false, reason: 'SDK request identifier is missing' };
+  if (!isRuntimeAdmissionSelectionRequest(request)) return { ok: false, reason: 'SDK admission request is invalid' };
   const payload = JSON.stringify({
     protocolVersion: '1',
     requestId,
@@ -1068,6 +1076,11 @@ function isAdmissionResponse(value: unknown, requestId: string): value is Runtim
   const response = value as Record<string, unknown>;
   return response.protocolVersion === '1' && response.requestId === requestId && response.ok === true && 'payload' in response
     && (!('provenance' in response) || isAdmissionProvenance(response.provenance));
+}
+
+function isRuntimeAdmissionSelectionRequest(value: unknown): value is RuntimeAdmissionSelectionRequest {
+  if (!isObject(value) || !isIdentityShape(value.contractIdentity) || !isNonEmptyString(value.contractVersion)) return false;
+  return isScope(value.scope);
 }
 
 function isAdmissionProvenance(value: unknown): value is RuntimeAdmissionProvenance {

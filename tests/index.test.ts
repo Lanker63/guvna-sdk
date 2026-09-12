@@ -116,7 +116,7 @@ describe('SDK Runtime transport', () => {
   });
 
   it('receives a Core-backed admission decision without a local semantic adapter', async () => {
-    const result = await receiveRuntimeAdmissionDecision({}, 'admission-remote-1', {
+    const result = await receiveRuntimeAdmissionDecision({ contractIdentity: identity, contractVersion: '1.0.0', scope }, 'admission-remote-1', {
       send: async () => JSON.stringify({
         protocolVersion: '1', requestId: 'admission-remote-1', ok: true, payload: context,
         provenance: {
@@ -146,7 +146,7 @@ describe('SDK Runtime transport', () => {
         });
       },
     };
-    const result = await requestApplicableSemanticContext({ contractIdentity: identity, contractVersion: '1.0.0', scope: scope.identity }, 'admission-1', transport);
+    const result = await requestApplicableSemanticContext({ contractIdentity: identity, contractVersion: '1.0.0', scope }, 'admission-1', transport);
 
     expect(result).toEqual({
       ok: true,
@@ -162,20 +162,60 @@ describe('SDK Runtime transport', () => {
       protocolVersion: '1',
       requestId: 'admission-1',
       operation: 'admitApplicableSemanticContext',
-      payload: { contractIdentity: identity, contractVersion: '1.0.0', scope: scope.identity },
+      payload: { contractIdentity: identity, contractVersion: '1.0.0', scope },
     });
   });
 
   it('fails closed on refusal and mismatched admission responses', async () => {
-    const refusal = await requestApplicableSemanticContext({}, 'admission-1', {
+    const admissionRequest = { contractIdentity: identity, contractVersion: '1.0.0', scope };
+    const refusal = await requestApplicableSemanticContext(admissionRequest, 'admission-1', {
       send: async () => JSON.stringify({ protocolVersion: '1', requestId: 'admission-1', ok: false, reason: 'No applicable contract' }),
     });
     expect(refusal).toEqual({ ok: false, reason: 'No applicable contract' });
 
-    const mismatch = await requestApplicableSemanticContext({}, 'admission-1', {
+    const mismatch = await requestApplicableSemanticContext(admissionRequest, 'admission-1', {
       send: async () => JSON.stringify({ protocolVersion: '1', requestId: 'other', ok: true, payload: context }),
     });
     expect(mismatch).toEqual({ ok: false, reason: 'SDK admission response is invalid' });
+  });
+
+  it('fails closed for legacy identity-only admission requests before transport', async () => {
+    let calls = 0;
+    const transport = { send: async () => { calls += 1; return ''; } };
+    const request = { contractIdentity: identity, contractVersion: '1.0.0', scope: scope.identity };
+
+    await expect(requestApplicableSemanticContext(request, 'admission-legacy-request', transport)).resolves.toEqual({
+      ok: false,
+      reason: 'SDK admission request is invalid',
+    });
+    await expect(receiveRuntimeAdmissionDecision(request, 'admission-legacy-decision', transport)).resolves.toEqual({
+      ok: false,
+      reason: 'SDK admission request is invalid',
+    });
+    expect(calls).toBe(0);
+  });
+
+  it('fails closed for an admission response with an identity-only scope', async () => {
+    const result = await receiveRuntimeAdmissionDecision(
+      { contractIdentity: identity, contractVersion: '1.0.0', scope },
+      'admission-legacy-response',
+      {
+        send: async () => JSON.stringify({
+          protocolVersion: '1',
+          requestId: 'admission-legacy-response',
+          ok: true,
+          payload: { ...context, scope: scope.identity },
+          provenance: {
+            governedRepositoryIdentity: { identityKind: 'repository', value: 'repo-1' },
+            projectionIdentity: { identityKind: 'projection', value: 'projection-1' },
+            projectionVersion: '1.0.0',
+            compiledAt: '2026-08-22T00:00:00Z',
+            freshness: { status: 'current', checkedAt: '2026-08-22T00:00:00Z', currentProjectionVersion: '1.0.0' },
+          },
+        }),
+      },
+    );
+    expect(result).toEqual({ ok: false, reason: 'Runtime requires a valid applicable ratified semantic context' });
   });
 
   it('round-trips a candidate response using acceptance records', () => {
