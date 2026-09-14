@@ -1,3 +1,6 @@
+export * from './repository-adoption.js';
+export * from './runtime-entitlement.js';
+
 export interface SemanticIdentity { identityKind: string; value: string }
 export interface SemanticRef { identity: SemanticIdentity }
 export interface SemanticScope { identity: SemanticIdentity; meaning: { statement: string; terms: SemanticRef[] } }
